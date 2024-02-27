@@ -36,3 +36,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+*.yml
+.github/workflows/qodana_code_quality.yml
+.idea/google-java-format.xml
+.idea/google-java-format.xml
+qodana.yaml
