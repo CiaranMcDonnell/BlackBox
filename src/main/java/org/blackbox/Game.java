@@ -4,6 +4,7 @@ import java.util.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
+import javafx.util.Pair;
 
 /**
  * The Game class represents a single game session. It manages the game state, including the
@@ -48,12 +49,6 @@ public class Game {
     for (int i = 0; i < 6; i++) {
       atomLocations.add(shuffledHexes.get(i)); // Add the first six locations to atomLocations
     }
-    Map<String, List<String>> atomNeighbors = atomsEffectiveRange();
-    for (Map.Entry<String, List<String>> entry : atomNeighbors.entrySet()) {
-      System.out.println(
-          "Atom Location: " + entry.getKey() + ", Effective Range: " + entry.getValue());
-    }
-
     atomsSelected = true; // ensures that only 6 atoms can be selected in any single game run
   }
 
@@ -136,14 +131,15 @@ public class Game {
    */
   public void storeEntryPoints() {
     List<String> validHexes = new ArrayList<>(hexManager.getAllHexagonLocations());
-    // Second loop to assign entry points
+    Map<Integer, Pair<Integer, String>> entryPointMap = new HashMap<>();
+    int counter = 1;
+
     for (String hex : validHexes) {
       String[] coordinates = hex.split(",");
       int x = Integer.parseInt(coordinates[0]);
       int y = Integer.parseInt(coordinates[1]);
       int z = Integer.parseInt(coordinates[2]);
 
-      // Use a Linked HashSet to ensure uniqueness
       Set<Integer> hexEntryPointsSet = new LinkedHashSet<>();
       if (x == -GUI.HIGHEST_COORDINATE) {
         hexEntryPointsSet.addAll(Arrays.asList(120, 180));
@@ -163,14 +159,22 @@ public class Game {
       if (y == GUI.HIGHEST_COORDINATE) {
         hexEntryPointsSet.addAll(Arrays.asList(60, 120));
       }
-      // Convert the Set back to a List before storing
+
       List<Integer> hexEntryPoints = new ArrayList<>(hexEntryPointsSet);
       if (!hexEntryPoints.isEmpty()) {
         entryPoints.put(hex, hexEntryPoints);
       }
+
+      for (Integer point : hexEntryPoints) {
+        Pair<Integer, String> degreeHexPair = new Pair<>(point, hex);
+        entryPointMap.put(counter, degreeHexPair);
+        counter++;
+      }
     }
-    for (Map.Entry<String, List<Integer>> entry : entryPoints.entrySet()) {
-      System.out.println("Hex: " + entry.getKey() + ", Entry Points: " + entry.getValue());
+
+    // Print the entryPointMap to the console
+    for (Map.Entry<Integer, Pair<Integer, String>> entry : entryPointMap.entrySet()) {
+      System.out.println("Entry Point: " + entry.getKey() + ", Degree and Hex Location: " + entry.getValue());
     }
   }
 
@@ -181,4 +185,100 @@ public class Game {
   public Map<String, List<Integer>> getEntryPointsMap() {
     return entryPoints;
   }
-}
+
+//  public void rayShooting(){
+//
+//
+//  }
+
+
+
+
+
+
+
+
+
+
+//  public void displayEntryPoints() {
+//    int counter = 1;
+//
+//    Comparator<String> comparator = (o1, o2) -> {
+//      String[] coordinates1 = o1.split(",");
+//      String[] coordinates2 = o2.split(",");
+//      int z1 = Integer.parseInt(coordinates1[2]);
+//      int x1 = Integer.parseInt(coordinates1[0]);
+//      int y1 = Integer.parseInt(coordinates1[1]);
+//      int z2 = Integer.parseInt(coordinates2[2]);
+//      int x2 = Integer.parseInt(coordinates2[0]);
+//      int y2 = Integer.parseInt(coordinates2[1]);
+//
+//      // Compare based on the order: maxvalue z -> maxvalue x -> -maxvalue y -> -maxvalue z -> maxvalue x -> -maxvalue y
+//      if (z1 != z2) {
+//        return (z2 == GUI.HIGHEST_COORDINATE ? 1 : -1);
+//      } else if (x1 != x2) {
+//        return (x2 == GUI.HIGHEST_COORDINATE ? 1 : -1);
+//      } else if (y1 != y2) {
+//        return (y1 == -GUI.HIGHEST_COORDINATE ? 1 : -1);
+//      } else if (z1 != z2) {
+//        return (z1 == -GUI.HIGHEST_COORDINATE ? 1 : -1);
+//      } else if (x1 != x2) {
+//        return (x1 == GUI.HIGHEST_COORDINATE ? 1 : -1);
+//      } else {
+//        return (y2 == -GUI.HIGHEST_COORDINATE ? 1 : -1);
+//      }
+//    };
+//
+//    // Create a TreeMap with the entryPoints map to sort it
+//    Map<String, List<Integer>> sortedEntryPoints = new TreeMap<>(comparator);
+//    sortedEntryPoints.putAll(entryPoints);
+//
+//    // Create a map to store the entry point, degree and hex location
+//    Map<String, Map<Integer, String>> entryPointMap = new HashMap<>();
+//
+//    for (Map.Entry<String, List<Integer>> entry : sortedEntryPoints.entrySet()) {
+//      String[] coordinates = entry.getKey().split(",");
+//      int x = Integer.parseInt(coordinates[0]);
+//      int y = Integer.parseInt(coordinates[1]);
+//      int z = Integer.parseInt(coordinates[2]);
+//
+//      // Calculate the position of the hexagon
+//      double posX = GUI.getHexHeight() * (x + y / 2.0) + (GUI.GUI_SIZE / 2);
+//      double posY = 1.5 * GUI.getHexSize() * y + (GUI.GUI_SIZE / 2);
+//
+//      // Adjust the offset factor based on the number of entry points
+//      double offsetFactor = 1.2; // Decrease this value to bring the labels closer to the edge
+//
+//      for (Integer point : entry.getValue()) {
+//        // Convert the entry point from degrees to radians
+//        double angle = Math.toRadians(point);
+//
+//        // Calculate the position of the label
+//        double labelPosX = posX + offsetFactor * GUI.getHexSize() * Math.cos(angle);
+//        double labelPosY = posY + offsetFactor * GUI.getHexSize() * Math.sin(angle);
+//
+//        // Create a new Label for the entry point
+//        javafx.scene.control.Label entryPointLabel = new javafx.scene.control.Label(String.valueOf(counter));
+//        entryPointLabel.setLayoutX(labelPosX);
+//        entryPointLabel.setLayoutY(labelPosY);
+//
+//        // Add the Label to the root Pane
+//        GUI.addLabel(entryPointLabel);
+//
+//        Map<Integer, String> degreeHexMap = new HashMap<>();
+//
+//        // Add the degree and hex location to the map
+//        degreeHexMap.put(point, entry.getKey());
+//
+//        entryPointMap.put(String.valueOf(counter), degreeHexMap);
+//
+//        counter++;
+//      }
+//    }
+//
+//    // Print the entryPointMap to the console
+//    for (Map.Entry<String, Map<Integer, String>> entry : entryPointMap.entrySet()) {
+//      System.out.println("Entry Point: " + entry.getKey() + ", Degree and Hex Location: " + entry.getValue());
+//    }
+  }
+
