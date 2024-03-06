@@ -19,7 +19,7 @@ import javafx.stage.Stage;
  * and managing the graphical user interface of the application.
  */
 public class GUI extends Application {
-
+  Game myGame = new Game(hexManager);
   // Constants for the GUI
   public static final int HIGHEST_COORDINATE =
       4; // Highest coordinate value which also sets the over-all size of the grid
@@ -100,8 +100,8 @@ public class GUI extends Application {
               posX + HEX_SIZE * Math.cos((i * Math.PI / 3) + Math.PI / 6),
               posY + HEX_SIZE * Math.sin((i * Math.PI / 3) + Math.PI / 6));
     }
-    hexagon.setFill(Color.LIGHTGRAY);
-    hexagon.setStroke(Color.BLACK);
+    hexagon.setFill(Color.BLACK);
+    hexagon.setStroke(Color.ORANGE);
     hexManager.addHexagon(x, y, z, hexagon);
     return hexagon;
   }
@@ -132,7 +132,6 @@ public class GUI extends Application {
       }
     }
   }
-
   // Position Calculator - could be reformatted later with better logic
   private double[] positionCalculator(int degree, int x, int y, int z) {
     double posX = GUI.getHexHeight() * (x + y / 2.0) + (GUI.GUI_SIZE / 2);
@@ -192,6 +191,7 @@ public class GUI extends Application {
   private void createAllEntryPointButtons(Game myGame) {
     // Create a button for each entry point
     for (Map.Entry<String, List<Integer>> entry : myGame.getEntryPointsMap().entrySet()) {
+      String hex = entry.getKey();
       String[] coordinates = entry.getKey().split(",");
       int x = Integer.parseInt(coordinates[0]);
       int y = Integer.parseInt(coordinates[1]);
@@ -200,7 +200,7 @@ public class GUI extends Application {
       for (Integer degree : entry.getValue()) {
         // Calculate the position of the button
         double[] position = calculateButtonPosition(degree, x, y, z);
-        Button entryPointButton = createButtonWithAction(degree, position[0], position[1]);
+        Button entryPointButton = createButtonWithAction(degree, position[0], position[1], hex);
 
         // Add the button to the root pane
         root.getChildren().add(entryPointButton);
@@ -208,7 +208,9 @@ public class GUI extends Application {
     }
   }
 
-  private Button createButtonWithAction(Integer degree, double posX, double posY) {
+
+
+  private Button createButtonWithAction(Integer degree, double posX, double posY, String hex) {
     Button entryPointButton = new Button();
     entryPointButton.setLayoutX(posX); // Set the x position of the button
     entryPointButton.setLayoutY(posY); // Set the y position of the button
@@ -216,9 +218,14 @@ public class GUI extends Application {
     entryPointButton.setMinHeight(30); // Set the height of the button
     entryPointButton.setRotate(degree); // Rotate the button
 
-    entryPointButton.setStyle("-fx-background-color: black;");
+    entryPointButton.setUserData(new ButtonData(hex, degree));
+
+    entryPointButton.setStyle("-fx-background-color: orange;");
     entryPointButton.setOnAction(e -> {
-      entryPointButton.setStyle("-fx-background-color: red;");
+      ButtonData buttonData = (ButtonData) entryPointButton.getUserData();
+      entryPointButton.setStyle("-fx-background-color: yellow;");
+      myGame.handleButtonClick(buttonData);
+      entryPointButton.setDisable(true);
     });
 
     return entryPointButton;
@@ -228,9 +235,8 @@ public class GUI extends Application {
   @Override
   public void start(Stage primaryStage) {
     root = new Pane();
-    Game myGame = new Game(hexManager);
     Scene scene = new Scene(root, GUI_SIZE, GUI_SIZE);
-
+    root.setStyle("-fx-background-color: black;");
     Button startGameButton = new Button("Start Game");
     startGameButton.setLayoutX(10); // Set the x position of the button
     startGameButton.setLayoutY(10); // Set the y position of the button
@@ -246,6 +252,7 @@ public class GUI extends Application {
             e -> {
               // Enable the reveal button when the start game button is clicked
               myGame.atomSelection();
+              myGame.atomsEffectiveRange();
               myGame.storeEntryPoints();
               revealButton.setDisable(false);
               startGameButton.setDisable(true); // Disable the button after it's clicked
@@ -286,3 +293,4 @@ public class GUI extends Application {
     }
   }
 }
+

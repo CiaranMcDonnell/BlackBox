@@ -58,10 +58,10 @@ public class Game {
 
   /**
    * Reveals the atoms by changing the color of the hexagons and adding a dotted circle to the GUI.
-   * This method iterates over the atom locations, splits the location string into coordinates,
-   * and uses these coordinates to alter the corresponding hexagon in the HexagonManager.
-   * It then calculates the position of the hexagon and creates a new Circle at that position.
-   * The Circle is styled and added to the GUI.
+   * This method iterates over the atom locations, splits the location string into coordinates, and
+   * uses these coordinates to alter the corresponding hexagon in the HexagonManager. It then
+   * calculates the position of the hexagon and creates a new Circle at that position. The Circle is
+   * styled and added to the GUI.
    */
   public void atomReveal() {
     for (String location : atomLocations) {
@@ -79,7 +79,7 @@ public class Game {
 
       // Create a new Circle for the atom
       Circle atomCircle = new Circle(posX, posY, GUI.getHexHeight());
-      atomCircle.setStroke(Color.BLACK);
+      atomCircle.setStroke(Color.WHITE);
       atomCircle.setStrokeWidth(2);
       atomCircle.setStrokeType(StrokeType.INSIDE);
       atomCircle.getStrokeDashArray().addAll(5d, 10d); // Set the stroke to a dotted pattern
@@ -91,13 +91,14 @@ public class Game {
   }
 
   /**
-   * Returns a map of the effective range of each atom.
-   * The effective range is defined as the neighboring locations of each atom.
-   * This method iterates over the atom locations, splits the location string into coordinates,
-   * and uses these coordinates to get the neighboring locations from the HexagonManager.
-   * If the coordinates are valid, the location and its neighbors are added to the map.
+   * Returns a map of the effective range of each atom. The effective range is defined as the
+   * neighboring locations of each atom. This method iterates over the atom locations, splits the
+   * location string into coordinates, and uses these coordinates to get the neighboring locations
+   * from the HexagonManager. If the coordinates are valid, the location and its neighbors are added
+   * to the map.
    *
-   * @return a map where the keys are the atom locations and the values are lists of neighboring locations
+   * @return a map where the keys are the atom locations and the values are lists of neighboring
+   *     locations
    */
   public Map<String, List<String>> atomsEffectiveRange() {
     Map<String, List<String>> atomNeighbors = new HashMap<>();
@@ -106,10 +107,12 @@ public class Game {
       int x = Integer.parseInt(coordinates[0]);
       int y = Integer.parseInt(coordinates[1]);
       int z = Integer.parseInt(coordinates[2]);
+      List<String> neighbors = hexManager.getNeighborLocations(x, y, z);
+
       if (isValidCoordinate(x, y, z)) {
-        List<String> neighbors = hexManager.getNeighborLocations(x, y, z);
         atomNeighbors.put(location, neighbors);
       }
+      System.out.println("Neighbors of " + location + ": " + neighbors);
     }
     return atomNeighbors;
   }
@@ -121,13 +124,13 @@ public class Game {
   }
 
   /**
-   * Stores the entry points for each hexagon in the grid.
-   * This method iterates over all valid hexagon locations, splits each location string into coordinates,
-   * and uses these coordinates to determine the entry points for each hexagon.
-   * The entry points are determined based on the position of the hexagon in the grid.
-   * If the hexagon is on the edge of the grid, it will have two entry points, otherwise it will have none.
-   * The entry points are stored in a LinkedHashSet to ensure uniqueness, and then converted back to a List before storing.
-   * The hexagon location and its entry points are then added to the entryPoints map.
+   * Stores the entry points for each hexagon in the grid. This method iterates over all valid
+   * hexagon locations, splits each location string into coordinates, and uses these coordinates to
+   * determine the entry points for each hexagon. The entry points are determined based on the
+   * position of the hexagon in the grid. If the hexagon is on the edge of the grid, it will have
+   * two entry points, otherwise it will have none. The entry points are stored in a LinkedHashSet
+   * to ensure uniqueness, and then converted back to a List before storing. The hexagon location
+   * and its entry points are then added to the entryPoints map.
    */
   public void storeEntryPoints() {
     List<String> validHexes = new ArrayList<>(hexManager.getAllHexagonLocations());
@@ -174,7 +177,8 @@ public class Game {
 
     // Print the entryPointMap to the console
     for (Map.Entry<Integer, Pair<Integer, String>> entry : entryPointMap.entrySet()) {
-      System.out.println("Entry Point: " + entry.getKey() + ", Degree and Hex Location: " + entry.getValue());
+      System.out.println(
+          "Entry Point: " + entry.getKey() + ", Degree and Hex Location: " + entry.getValue());
     }
   }
 
@@ -186,99 +190,163 @@ public class Game {
     return entryPoints;
   }
 
-//  public void rayShooting(){
-//
-//
-//  }
-
-
-
-
-
-
-
-
-
-
-//  public void displayEntryPoints() {
-//    int counter = 1;
-//
-//    Comparator<String> comparator = (o1, o2) -> {
-//      String[] coordinates1 = o1.split(",");
-//      String[] coordinates2 = o2.split(",");
-//      int z1 = Integer.parseInt(coordinates1[2]);
-//      int x1 = Integer.parseInt(coordinates1[0]);
-//      int y1 = Integer.parseInt(coordinates1[1]);
-//      int z2 = Integer.parseInt(coordinates2[2]);
-//      int x2 = Integer.parseInt(coordinates2[0]);
-//      int y2 = Integer.parseInt(coordinates2[1]);
-//
-//      // Compare based on the order: maxvalue z -> maxvalue x -> -maxvalue y -> -maxvalue z -> maxvalue x -> -maxvalue y
-//      if (z1 != z2) {
-//        return (z2 == GUI.HIGHEST_COORDINATE ? 1 : -1);
-//      } else if (x1 != x2) {
-//        return (x2 == GUI.HIGHEST_COORDINATE ? 1 : -1);
-//      } else if (y1 != y2) {
-//        return (y1 == -GUI.HIGHEST_COORDINATE ? 1 : -1);
-//      } else if (z1 != z2) {
-//        return (z1 == -GUI.HIGHEST_COORDINATE ? 1 : -1);
-//      } else if (x1 != x2) {
-//        return (x1 == GUI.HIGHEST_COORDINATE ? 1 : -1);
-//      } else {
-//        return (y2 == -GUI.HIGHEST_COORDINATE ? 1 : -1);
-//      }
-//    };
-//
-//    // Create a TreeMap with the entryPoints map to sort it
-//    Map<String, List<Integer>> sortedEntryPoints = new TreeMap<>(comparator);
-//    sortedEntryPoints.putAll(entryPoints);
-//
-//    // Create a map to store the entry point, degree and hex location
-//    Map<String, Map<Integer, String>> entryPointMap = new HashMap<>();
-//
-//    for (Map.Entry<String, List<Integer>> entry : sortedEntryPoints.entrySet()) {
-//      String[] coordinates = entry.getKey().split(",");
-//      int x = Integer.parseInt(coordinates[0]);
-//      int y = Integer.parseInt(coordinates[1]);
-//      int z = Integer.parseInt(coordinates[2]);
-//
-//      // Calculate the position of the hexagon
-//      double posX = GUI.getHexHeight() * (x + y / 2.0) + (GUI.GUI_SIZE / 2);
-//      double posY = 1.5 * GUI.getHexSize() * y + (GUI.GUI_SIZE / 2);
-//
-//      // Adjust the offset factor based on the number of entry points
-//      double offsetFactor = 1.2; // Decrease this value to bring the labels closer to the edge
-//
-//      for (Integer point : entry.getValue()) {
-//        // Convert the entry point from degrees to radians
-//        double angle = Math.toRadians(point);
-//
-//        // Calculate the position of the label
-//        double labelPosX = posX + offsetFactor * GUI.getHexSize() * Math.cos(angle);
-//        double labelPosY = posY + offsetFactor * GUI.getHexSize() * Math.sin(angle);
-//
-//        // Create a new Label for the entry point
-//        javafx.scene.control.Label entryPointLabel = new javafx.scene.control.Label(String.valueOf(counter));
-//        entryPointLabel.setLayoutX(labelPosX);
-//        entryPointLabel.setLayoutY(labelPosY);
-//
-//        // Add the Label to the root Pane
-//        GUI.addLabel(entryPointLabel);
-//
-//        Map<Integer, String> degreeHexMap = new HashMap<>();
-//
-//        // Add the degree and hex location to the map
-//        degreeHexMap.put(point, entry.getKey());
-//
-//        entryPointMap.put(String.valueOf(counter), degreeHexMap);
-//
-//        counter++;
-//      }
-//    }
-//
-//    // Print the entryPointMap to the console
-//    for (Map.Entry<String, Map<Integer, String>> entry : entryPointMap.entrySet()) {
-//      System.out.println("Entry Point: " + entry.getKey() + ", Degree and Hex Location: " + entry.getValue());
-//    }
+  public void handleButtonClick(ButtonData buttonData) {
+    String originHex = buttonData.hex();
+    int degree = buttonData.degree();
+    traversalRules(originHex, degree);
   }
 
+  public void traversalRules(String originHex, int degree) {
+    String direction = null;
+    Map<Integer, String> degreeToDirectionMap = new HashMap<>();
+    // Implement traversal rules for degree 300
+    direction =
+        switch (degree) {
+          case 0 -> "-1, 0, +1"; // Implement traversal rules for degree 0
+          case 60 -> "0, -1, +1"; // Implement traversal rules for degree 60
+          case 120 -> "+1, -1, 0"; // Implement traversal rules for degree 120
+          case 180 -> "+1, 0, -1"; // Implement traversal rules for degree 180
+          case 240 -> "0, +1, -1"; // Implement traversal rules for degree 240
+          case 300 -> "-1, +1, 0";
+          default -> direction;
+        };
+    if (direction == null) {
+      throw new IllegalArgumentException("Invalid degree: " + originHex);
+    }
+    collisionDetection(originHex, direction);
+  }
+
+  public void collisionDetection(String originHex, String direction) {
+    String[] coordinates = originHex.split(",");
+    int x = Integer.parseInt(coordinates[0]);
+    int y = Integer.parseInt(coordinates[1]);
+    int z = Integer.parseInt(coordinates[2]);
+
+    System.out.println("Origin Hex: " + originHex);
+    System.out.println("Direction: " + direction);
+
+    int dx = 0, dy = 0, dz = 0;
+    switch (direction) {
+      case "-1, 0, +1":
+        dx = -1;
+        dz = 1;
+        break;
+      case "0, -1, +1":
+        dy = -1;
+        dz = 1;
+        break;
+      case "+1, -1, 0":
+        dx = 1;
+        dy = -1;
+        break;
+      case "+1, 0, -1":
+        dx = 1;
+        dz = -1;
+        break;
+      case "0, +1, -1":
+        dy = 1;
+        dz = -1;
+        break;
+      case "-1, +1, 0":
+        dx = -1;
+        dy = 1;
+        break;
+    }
+
+    Map<String, List<String>> atomNeighbors = atomsEffectiveRange();
+    if (atomLocations.contains(originHex)
+        || atomNeighbors.values().stream().anyMatch(neighbors -> neighbors.contains(originHex))) {
+      System.out.println("Collision detected at origin: " + originHex);
+      atomEncounter(originHex, direction);
+      hexManager.alterHexagon(x, y, z, Color.WHITE);
+      return;
+    }
+
+    while (x >= -4 && x <= 4 && y >= -4 && y <= 4 && z >= -4 && z <= 4) {
+      String currentHex = x + "," + y + "," + z;
+      System.out.println("Current Hex: " + currentHex);
+
+      // Update atomNeighbors map in each iteration
+
+      if (atomLocations.contains(currentHex)) {
+        System.out.println("Collision detected at: " + currentHex + " in atomLocations");
+        atomEncounter(originHex, direction);
+        return;
+      }
+      // Check if any of the lists of neighbors contain the current hex
+      if (atomNeighbors.values().stream().anyMatch(neighbors -> neighbors.contains(currentHex))) {
+        System.out.println("Collision detected at: " + currentHex + " in atomNeighbors");
+        atomEncounter(originHex, direction);
+        return;
+      }
+      x += dx;
+      y += dy;
+      z += dz;
+    }
+    System.out.println("No collision detected");
+    noAtomEncounter(originHex, direction); // No collision detected
+    return;
+  }
+
+  public void noAtomEncounter(String originHex, String direction) {
+    // Extract the x, y, and z coordinates from the originHex string
+    String[] coordinates = originHex.split(",");
+    int x = Integer.parseInt(coordinates[0]);
+    int y = Integer.parseInt(coordinates[1]);
+    int z = Integer.parseInt(coordinates[2]);
+    hexManager.alterHexagon(x, y, z, Color.PURPLE);
+    // Calculate the direction to move in
+    int dx = 0, dy = 0, dz = 0;
+    switch (direction) {
+      case "-1, 0, +1":
+        dx = -1;
+        dz = 1;
+        break;
+      case "0, -1, +1":
+        dy = -1;
+        dz = 1;
+        break;
+      case "+1, -1, 0":
+        dx = 1;
+        dy = -1;
+        break;
+      case "+1, 0, -1":
+        dx = 1;
+        dz = -1;
+        break;
+      case "0, +1, -1":
+        dy = 1;
+        dz = -1;
+        break;
+      case "-1, +1, 0":
+        dx = -1;
+        dy = 1;
+        break;
+    }
+
+    // Move in the direction until you reach the edge of the grid
+    while (x >= -4 && x <= 4 && y >= -4 && y <= 4 && z >= -4 && z <= 4) {
+      // Calculate potential new coordinates
+      int potentialX = x + dx;
+      int potentialY = y + dy;
+      int potentialZ = z + dz;
+
+      // Only update x, y, and z if the new coordinates are valid
+      if (isValidCoordinate(potentialX, potentialY, potentialZ)) {
+        x = potentialX;
+        y = potentialY;
+        z = potentialZ;
+      } else {
+        // If the new coordinates are not valid, break the loop
+        break;
+      }
+    }
+    hexManager.alterHexagon(x, y, z, Color.PURPLE);
+    // The x, y, and z coordinates of the last hexagon in the traversal are now stored in x, y, and
+    // z
+    System.out.println("Last hexagon in traversal: " + x + "," + y + "," + z);
+  }
+
+  public void atomEncounter(String originHex, String direction) {}
+
+}
