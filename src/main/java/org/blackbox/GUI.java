@@ -100,7 +100,7 @@ public class GUI extends Application {
               posX + HEX_SIZE * Math.cos((i * Math.PI / 3) + Math.PI / 6),
               posY + HEX_SIZE * Math.sin((i * Math.PI / 3) + Math.PI / 6));
     }
-    hexagon.setFill(Color.BLACK);
+    hexagon.setFill(Color.GRAY);
     hexagon.setStroke(Color.ORANGE);
     hexManager.addHexagon(x, y, z, hexagon);
     return hexagon;
@@ -236,7 +236,7 @@ public class GUI extends Application {
   public void start(Stage primaryStage) {
     root = new Pane();
     Scene scene = new Scene(root, GUI_SIZE, GUI_SIZE);
-    root.setStyle("-fx-background-color: black;");
+    root.setStyle("-fx-background-color: grey;");
     Button startGameButton = new Button("Start Game");
     startGameButton.setLayoutX(10); // Set the x position of the button
     startGameButton.setLayoutY(10); // Set the y position of the button
