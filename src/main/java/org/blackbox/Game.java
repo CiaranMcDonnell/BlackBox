@@ -250,16 +250,14 @@ public class Game {
         z += dz;
         continue;
       }
-      if (atomLocations.contains(currentHex)) {
-        System.out.println("Collision detected at: " + currentHex + " in atomLocations");
-        atomEncounter(originHex, direction, currentHex);
-        return;
-      }
       // Check if any of the lists of neighbors contain the current hex
-      if (atomNeighbors.values().stream().anyMatch(neighbors -> neighbors.contains(currentHex))) {
-        System.out.println("Collision detected at: " + currentHex + " in atomNeighbors");
-        atomEncounter(originHex, direction, currentHex);
-        return;
+      for (Map.Entry<String, List<String>> entry : atomNeighbors.entrySet()) {
+        if (entry.getValue().contains(currentHex)) {
+          String specificAtomNeighbor = entry.getKey();
+          System.out.println("Collision detected at: " + currentHex + " in atomNeighbors");
+          atomEncounter(originHex, direction, currentHex, specificAtomNeighbor);
+          return;
+        }
       }
       x += dx;
       y += dy;
@@ -293,7 +291,7 @@ public class Game {
     System.out.println("Last hexagon in traversal: " + x + "," + y + "," + z);
   }
 
-  public void atomEncounter(String originHex, String direction, String currentHex) {
+  public void atomEncounter(String originHex, String direction, String currentHex, String specificAtom) {
     // Split the origin coordinates
     String[] originCoordinates = originHex.split(",");
     int originX = Integer.parseInt(originCoordinates[0]);
@@ -318,16 +316,33 @@ public class Game {
     int nextZ = currentZ + dz;
 
     String nextPos = nextX + "," + nextY + "," + nextZ;
-    String deflectionPos = (nextX + 1) + "," + (nextY - 1) + "," + nextZ;
+    String deflectionPosLowerRight = (nextX + 1) + "," + (nextY - 1) + "," + nextZ;
+    String deflectionPosLowerLeft = (nextX) + "," + (nextY -1) + "," + (nextZ + 1);
+    String deflectionPosUpperRight = (nextX - 1) + "," + (nextY + 1) + "," + (nextZ-1);
+    String deflectionPosUpperLeft = (nextX - 1) + "," + (nextY - 1) + "," + nextZ;
+    String deflectionPosRight = (nextX + 1) + "," + nextY + "," + (nextZ - 1);
+    String deflectionPosLeft = (nextX - 1) + "," + nextY + "," + (nextZ + 1);
+    String deflectionPosUp = nextX + "," + (nextY + 1) + "," + (nextZ - 1);
+    String deflectionPosDown = nextX + "," + (nextY - 1) + "," + (nextZ + 1);
+
     // Check if the next position is in the atom locations
     if (atomLocations.contains(nextPos)) {
       directHit(originX, originY, originZ);
       System.out.println("Direct Hit: " + nextPos);
     }
     // lower deflection
-    if (atomLocations.contains(deflectionPos)) {
-      deflectionHit(direction, currentHex, originHex);
-      System.out.println("Deflection hit at: " + deflectionPos);
+    else if (specificAtom.equals(deflectionPosLowerLeft) || specificAtom.equals(deflectionPosLowerRight)
+            || specificAtom.equals(deflectionPosRight) || specificAtom.equals(deflectionPosDown)) {
+      System.out.println("Lower Deflection");
+      boolean upper = false;
+      deflectionHit(direction, currentHex, originHex, upper);
+    }
+    // upper deflection
+    else if (specificAtom.equals(deflectionPosUpperRight) || specificAtom.equals(deflectionPosUpperLeft)
+            || specificAtom.equals(deflectionPosLeft) || specificAtom.equals(deflectionPosUp)) {
+      System.out.println("Upper Deflection");
+      boolean upper = true;
+      deflectionHit(direction, currentHex, originHex, upper);
     }
   }
 
@@ -336,21 +351,36 @@ public class Game {
   }
 
   // Temporary Implementation of Deflection, collision after deflection not yet implemented.
-  public void deflectionHit(String direction, String currentHex, String originHex) {
+  public void deflectionHit(String direction, String currentHex, String originHex, boolean upper) {
     // Calculate the direction to move in
     ignoredAtoms.add(currentHex);
-    direction =
-        switch (direction) {
-          case "-1, 0, +1" ->
-              "0, +1, -1"; // Implement traversal rules for degree 0 to 60 degree deflection
-          case "la, la, la" -> "la,la,lala"; // filler for the rest of the deflection rules
-            //              case 60 -> "0, -1, +1"; // Implement traversal rules for degree 60
-            //              case 120 -> "+1, -1, 0"; // Implement traversal rules for degree 120
-            //              case 180 -> "+1, 0, -1"; // Implement traversal rules for degree 180
-            //              case 240 -> "0, +1, -1"; // Implement traversal rules for degree 240
-            //              case 300 -> "-1, +1, 0";
-          default -> direction;
-        };
+    if (upper) {
+      direction =
+              switch (direction) {
+                case "0, -1, +1" ->
+                        "-1, +1, 0"; // Implement traversal rules for upper deflection
+                case "+1, -1, 0" ->
+                        "+1, 0, -1"; // Implement traversal rules for upper deflection
+                case "-1, 0, +1" ->
+                        "+1, -1, 0"; // Implement traversal rules for upper deflection
+                case "+1, 0, -1" ->
+                        "0, -1, +1"; // Implement traversal rules for upper deflection
+                default -> direction;
+              };
+    } else {
+      direction =
+              switch (direction) {
+                case "+1, 0, -1" ->
+                        "0, +1, -1"; // Implement traversal rules for lower deflection
+                case "0, +1, -1" ->
+                        "-1, 0, +1"; // Implement traversal rules for lower deflection
+                case "-1, +1, 0" ->
+                        "+1, -1, 0"; // Implement traversal rules for lower deflection
+                case "-1, 0, +1" ->
+                        "0, +1, -1"; // Implement traversal rules for lower deflection
+                default -> direction;
+              };
+    }
     int[] directionValues = directionSelection(direction);
     int dx = directionValues[0];
     int dy = directionValues[1];
