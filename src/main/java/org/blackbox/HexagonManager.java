@@ -58,7 +58,8 @@ public class HexagonManager {
   public void alterHexagon(int x, int y, int z, Color newColor) {
     GUI.Hexagon hex = getHexagon(x, y, z);
     if (hex != null) {
-      hex.setFill(newColor);
+      Color transparentColor = Color.color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 0.7);
+      hex.setFill(transparentColor);
     }
   }
 }

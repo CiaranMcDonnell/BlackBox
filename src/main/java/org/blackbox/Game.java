@@ -1,6 +1,7 @@
 package org.blackbox;
 
 import java.util.*;
+import java.util.List;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
@@ -12,6 +13,8 @@ import javafx.util.Pair;
  */
 public class Game {
   private Map<String, List<Integer>> entryPoints;
+  public int raysShot = 0, atomsGuesses = 0, atomsHit = 0, atomsMissed;
+  private int score;
   private List<String> atomLocations;
   private HexagonManager hexManager;
   private boolean atomsSelected;
@@ -522,7 +525,7 @@ public class Game {
     int y = Integer.parseInt(coordinates[1]);
     int z = Integer.parseInt(coordinates[2]);
 
-    String[] coordinatesOrigin = originHex.split(",");
+    String[] coordinatesOrigin = storedOriginHex.split(",");
     int originX = Integer.parseInt(coordinatesOrigin[0]);
     int originY = Integer.parseInt(coordinatesOrigin[1]);
     int originZ = Integer.parseInt(coordinatesOrigin[2]);
@@ -531,10 +534,10 @@ public class Game {
     lastX = lastHex[0];
     lastY = lastHex[1];
     lastZ = lastHex[2];
+
     //hexManager.alterHexagon(lastX, lastY, lastZ, Color.YELLOW);
-    //hexManager.alterHexagon(originX, originY, originZ, Color.YELLOW);
-    EncounterType encounterType = EncounterType.DOUBLE_HIT;
-    collisionDetection(currentHex, direction, false);
+    hexManager.alterHexagon(originX, originY, originZ, Color.YELLOW);
+    //collisionDetection(currentHex, direction, false);
   }
 
   public int[] directionSelection(String direction) {
@@ -645,6 +648,27 @@ public class Game {
       }
     }
     return new int[] {x, y, z};
+  }
+
+  public void scoreTracker(){
+    Map<String, Integer> orangeHexButtons = gui.getOrangeHexButtons();
+    for (Map.Entry<String, Integer> entry : orangeHexButtons.entrySet()) {
+      String key = entry.getKey();
+        atomsGuesses++;
+        if (atomLocations.contains(key)) {
+          atomsHit++;
+        }
+    }
+        atomsMissed = atomsGuesses - atomsHit;
+        System.out.println("Atoms Hit: " + atomsHit);
+        System.out.println("Atoms Guesses: " + atomsGuesses);
+        System.out.println("Rays Shot Final: " + raysShot);
+        score = (raysShot + (5 * (atomsGuesses - atomsHit)));
+        System.out.println("Score: " + score);
+  }
+
+  public int getScore(){
+    return score;
   }
 }
 
