@@ -17,12 +17,22 @@ public class Game {
   private boolean atomsSelected;
   private GUI gui;
   private List<String> ignoredAtoms;
+  private String storedOriginHex;
+  public enum EncounterType {
+    NO_ENCOUNTER,
+    DIRECT_HIT,
+    DEFLECTION,
+    REFLECTION,
+    DOUBLE_HIT
+  }
+  public EncounterType lastEncounterType = EncounterType.NO_ENCOUNTER;
   /**
    * Constructs a new Game with the given HexagonManager.
    *
    * @param hexManager the HexagonManager for the game
    */
-  public Game(HexagonManager hexManager) {
+  public Game(HexagonManager hexManager, GUI gui) {
+    this.gui = gui;
     this.entryPoints = new HashMap<>();
     atomLocations = new ArrayList<>();
     this.hexManager = hexManager;
@@ -191,6 +201,7 @@ public class Game {
 
   public void handleButtonClick(ButtonData buttonData) {
     String originHex = buttonData.hex();
+    storedOriginHex = originHex;
     int degree = buttonData.degree();
     traversalRules(originHex, degree);
   }
@@ -212,17 +223,33 @@ public class Game {
     if (direction == null) {
       throw new IllegalArgumentException("Invalid degree: " + originHex);
     }
-    collisionDetection(originHex, direction);
+    collisionDetection(originHex, direction, true);
+  }
+  public void handleEncounter(EncounterType encounterType) {
+    lastEncounterType = encounterType; // Store the last encounter type
+
+    switch (encounterType) {
+      case DEFLECTION:
+        // Handle deflection
+        break;
+      case DIRECT_HIT:
+        // Handle direct hit
+        break;
+      case NO_ENCOUNTER:
+      default:
+        // Handle no encounter
+        break;
+    }
   }
 
-  public void collisionDetection(String originHex, String direction) {
-    boolean collisions = false;
-    String[] coordinates = originHex.split(",");
+  public void collisionDetection(String startingHex, String direction, boolean originCheck) {
+    //boolean collisions = false;
+    String[] coordinates = startingHex.split(",");
     int x = Integer.parseInt(coordinates[0]);
     int y = Integer.parseInt(coordinates[1]);
     int z = Integer.parseInt(coordinates[2]);
 
-    System.out.println("Origin Hex: " + originHex);
+    System.out.println("Origin Hex: " + startingHex);
     System.out.println("Direction: " + direction);
 
     int[] directionValues = directionSelection(direction);
@@ -231,10 +258,11 @@ public class Game {
     int dz = directionValues[2];
 
     Map<String, List<String>> atomNeighbors = atomsEffectiveRange();
-    if (atomLocations.contains(originHex)
-        || atomNeighbors.values().stream().anyMatch(neighbors -> neighbors.contains(originHex))
-            && getEntryPointsMap().containsKey(originHex)) {
-      System.out.println("Collision detected at origin: " + originHex);
+    if (atomLocations.contains(storedOriginHex)
+        || atomNeighbors.values().stream().anyMatch(neighbors -> neighbors.contains(storedOriginHex))
+            && getEntryPointsMap().containsKey(storedOriginHex) && originCheck) {
+      EncounterType encounterType = EncounterType.NO_ENCOUNTER;
+      System.out.println("Collision detected at origin: " + startingHex);
       hexManager.alterHexagon(x, y, z, Color.WHITE);
       return;
     }
@@ -243,11 +271,13 @@ public class Game {
       String currentHex = x + "," + y + "," + z;
       System.out.println("Current Hex: " + currentHex);
 
+
       // Update atomNeighbors map in each iteration
       if (ignoredAtoms.contains(currentHex)) {
         x += dx;
         y += dy;
         z += dz;
+        ignoredAtoms.remove(currentHex);
         continue;
       }
       // Check if any of the lists of neighbors contain the current hex
@@ -255,40 +285,42 @@ public class Game {
         if (entry.getValue().contains(currentHex)) {
           String specificAtomNeighbor = entry.getKey();
           System.out.println("Collision detected at: " + currentHex + " in atomNeighbors");
-          atomEncounter(originHex, direction, currentHex, specificAtomNeighbor);
+          atomEncounter(startingHex, direction, currentHex, specificAtomNeighbor);
           return;
         }
       }
       x += dx;
       y += dy;
       z += dz;
-      ignoredAtoms.remove(currentHex);
     }
       System.out.println("No collision detected");
-      noAtomEncounter(originHex, direction); // No collision detected
+      noAtomEncounter(startingHex, direction); // No collision detected
   }
 
   public void noAtomEncounter(String originHex, String direction) {
     // Extract the x, y, and z coordinates from the originHex string
     String[] coordinates = originHex.split(",");
-    int x = Integer.parseInt(coordinates[0]);
-    int y = Integer.parseInt(coordinates[1]);
-    int z = Integer.parseInt(coordinates[2]);
-    hexManager.alterHexagon(x, y, z, Color.PURPLE);
+    int originX = Integer.parseInt(coordinates[0]);
+    int originY = Integer.parseInt(coordinates[1]);
+    int originZ = Integer.parseInt(coordinates[2]);
     // Calculate the direction to move in
     int[] directionValues = directionSelection(direction);
     int dx = directionValues[0];
     int dy = directionValues[1];
     int dz = directionValues[2];
 
-    int[] lastHex = findLastHex(x, y, z, dx, dy, dz);
-    x = lastHex[0];
-    y = lastHex[1];
-    z = lastHex[2];
-    hexManager.alterHexagon(x, y, z, Color.PURPLE);
+    int[] lastHex = findLastHex(originX, originY, originZ, dx, dy, dz);
+    int lastX = lastHex[0];
+    int lastY = lastHex[1];
+    int lastZ = lastHex[2];
+    if(EncounterType.NO_ENCOUNTER == lastEncounterType){
+      hexDisplayer(storedOriginHex, lastX, lastY, lastZ, direction);
+    }
+
     // The x, y, and z coordinates of the last hexagon in the traversal are now stored in x, y, and
     // z
-    System.out.println("Last hexagon in traversal: " + x + "," + y + "," + z);
+    System.out.println("Last hexagon in traversal: " + lastX + "," + lastY + "," + lastZ);
+    hexDisplayer(storedOriginHex, lastX, lastY, lastZ, direction);
   }
 
   public void atomEncounter(String originHex, String direction, String currentHex, String specificAtom) {
@@ -316,45 +348,89 @@ public class Game {
     int nextZ = currentZ + dz;
 
     String nextPos = nextX + "," + nextY + "," + nextZ;
-    String deflectionPosLowerRight = (nextX + 1) + "," + (nextY - 1) + "," + nextZ;
-    String deflectionPosLowerLeft = (nextX) + "," + (nextY -1) + "," + (nextZ + 1);
-    String deflectionPosUpperRight = (nextX - 1) + "," + (nextY + 1) + "," + (nextZ-1);
-    String deflectionPosUpperLeft = (nextX - 1) + "," + (nextY - 1) + "," + nextZ;
-    String deflectionPosRight = (nextX + 1) + "," + nextY + "," + (nextZ - 1);
-    String deflectionPosLeft = (nextX - 1) + "," + nextY + "," + (nextZ + 1);
-    String deflectionPosUp = nextX + "," + (nextY + 1) + "," + (nextZ - 1);
-    String deflectionPosDown = nextX + "," + (nextY - 1) + "," + (nextZ + 1);
-
+    String deflectionPosLowerCornerRight = (currentX) + "," + (currentY -1) + "," + (currentZ + 1);
+    String deflectionPosLowerCornerLeft = (currentX + 1) + "," + (currentY - 1) + "," + currentZ;
+    String deflectionPosUpperCornerRight = (currentX - 1) + "," + (currentY + 1) + "," + (currentZ);
+    String deflectionPosUpperCornerLeft = (currentX) + "," + (currentY + 1) + "," + (currentZ - 1);
+    String deflectionPosRight = (currentX + 1) + "," + currentY + "," + (currentZ - 1);
+    String deflectionPosLeft = (currentX - 1) + "," + currentY + "," + (currentZ + 1);
+    //ignoredAtoms.clear();
+    // Check if the hex is within 2 or more atom Neighbors
+    System.out.println("Specific Atom = " + specificAtom);
+    if(isInMultipleNeighbors(currentHex)){
+      System.out.println("Two Atoms approached, Reflection");
+      doubleAtomHit(direction, currentHex, originHex);
+    }
     // Check if the next position is in the atom locations
-    if (atomLocations.contains(nextPos)) {
-      directHit(originX, originY, originZ);
+    else if(atomLocations.contains(nextPos)) {
+      directHit(storedOriginHex);
       System.out.println("Direct Hit: " + nextPos);
     }
     // lower deflection
-    else if (specificAtom.equals(deflectionPosLowerLeft) || specificAtom.equals(deflectionPosLowerRight)
-            || specificAtom.equals(deflectionPosRight) || specificAtom.equals(deflectionPosDown)) {
+    else if(specificAtom.equals(deflectionPosRight)){
+      System.out.println("Direct Right Deflection");
+      deflectionHit(direction, currentHex, originHex, dx != 1, true);
+    }
+    else if(specificAtom.equals(deflectionPosLeft)){
+      System.out.println("Direct Left Deflection");
+      deflectionHit(direction, currentHex, originHex, dx != 1, true);
+    }
+    else if (specificAtom.equals(deflectionPosLowerCornerLeft) || specificAtom.equals(deflectionPosLowerCornerRight)) {
       System.out.println("Lower Deflection");
       boolean upper = false;
-      deflectionHit(direction, currentHex, originHex, upper);
+      deflectionHit(direction, currentHex, originHex, upper, false);
     }
     // upper deflection
-    else if (specificAtom.equals(deflectionPosUpperRight) || specificAtom.equals(deflectionPosUpperLeft)
-            || specificAtom.equals(deflectionPosLeft) || specificAtom.equals(deflectionPosUp)) {
+    else if (specificAtom.equals(deflectionPosUpperCornerRight) || specificAtom.equals(deflectionPosUpperCornerLeft)) {
       System.out.println("Upper Deflection");
       boolean upper = true;
-      deflectionHit(direction, currentHex, originHex, upper);
+      deflectionHit(direction, currentHex, originHex, upper, false);
+    }
+    else {
+      System.out.println("No collision detected");
+      noAtomEncounter(originHex, direction);
     }
   }
 
-  public void directHit(int x, int y, int z) {
+  public void directHit(String storedOriginHex) {
+    //handleEncounter(EncounterType.DIRECT_HIT);
+    String[] coordinates = storedOriginHex.split(",");
+    int x = Integer.parseInt(coordinates[0]);
+    int y = Integer.parseInt(coordinates[1]);
+    int z = Integer.parseInt(coordinates[2]);
     hexManager.alterHexagon(x, y, z, Color.GREEN);
   }
 
   // Temporary Implementation of Deflection, collision after deflection not yet implemented.
-  public void deflectionHit(String direction, String currentHex, String originHex, boolean upper) {
+  public void deflectionHit(String direction, String currentHex, String originHex, boolean upper, boolean side) {
+    handleEncounter(EncounterType.DEFLECTION);
     // Calculate the direction to move in
     ignoredAtoms.add(currentHex);
-    if (upper) {
+    if(side){
+        System.out.println("Side true");
+        System.out.println("Pre Direction: " + direction);
+        direction =
+                switch (direction) {
+                    case "-1, 0, +1" ->
+                            "0, +1, -1"; // Implement traversal rules for side deflection
+                    case "0, -1, +1" ->
+                            "+1, -1, 0"; // Implement traversal rules for side deflection
+                    case "+1, -1, 0" ->
+                            "0, -1, +1"; // Implement traversal rules for side deflection
+                    case "+1, 0, -1" ->
+                            "-1, +1, 0"; // Implement traversal rules for side deflection
+                    case "0, +1 , -1" ->
+                            "-1, 0, +1"; // Implement traversal rules for side deflection
+                    case "0, +1, -1" ->
+                            "-1, +1, 0"; // Implement traversal rules for side deflection
+                    case "-1, +1, 0" ->
+                            "0, +1, -1"; // Implement traversal rules for side deflection
+                    default -> direction;
+                };
+    }
+    else if (upper) {
+      System.out.println("Upper true");
+      System.out.println("Pre Direction: " + direction);
       direction =
               switch (direction) {
                 case "0, -1, +1" ->
@@ -362,12 +438,18 @@ public class Game {
                 case "+1, -1, 0" ->
                         "+1, 0, -1"; // Implement traversal rules for upper deflection
                 case "-1, 0, +1" ->
-                        "+1, -1, 0"; // Implement traversal rules for upper deflection
-                case "+1, 0, -1" ->
                         "0, -1, +1"; // Implement traversal rules for upper deflection
+                case "+1, 0, -1" ->
+                        "+1, -1, 0"; // Implement traversal rules for upper deflection
+                case "0, +1 , -1" ->
+                        "+1, +1, 0"; // Implement traversal rules for upper deflection
+                case "0, +1, -1" ->
+                        "+1, 0, -1"; // Implement traversal rules for upper deflection
                 default -> direction;
               };
     } else {
+      System.out.println("Upper false");
+      System.out.println("Pre Direction: " + direction);
       direction =
               switch (direction) {
                 case "+1, 0, -1" ->
@@ -377,10 +459,16 @@ public class Game {
                 case "-1, +1, 0" ->
                         "+1, -1, 0"; // Implement traversal rules for lower deflection
                 case "-1, 0, +1" ->
-                        "0, +1, -1"; // Implement traversal rules for lower deflection
+                        "-1, +1, 0"; // Implement traversal rules for lower deflection
+                case "+1, -1, 0" ->
+                        "+1, 0, -1"; // Implement traversal rules for lower deflection
+                case "0, -1, +1" ->
+                        "-1, 0, +1"; // Implement traversal rules for lower deflection
                 default -> direction;
               };
     }
+
+    System.out.println("Direction: " + direction);
     int[] directionValues = directionSelection(direction);
     int dx = directionValues[0];
     int dy = directionValues[1];
@@ -399,9 +487,54 @@ public class Game {
     lastX = lastHex[0];
     lastY = lastHex[1];
     lastZ = lastHex[2];
-    hexManager.alterHexagon(lastX, lastY, lastZ, Color.BLUE);
-    hexManager.alterHexagon(originX, originY, originZ, Color.BLUE);
-    // Not needed for just yet. collisionDetection(currentHex, direction);
+    //hexManager.alterHexagon(lastX, lastY, lastZ, Color.BLUE);
+    //hexManager.alterHexagon(originX, originY, originZ, Color.BLUE);
+    EncounterType encounterType = EncounterType.DEFLECTION;
+    collisionDetection(currentHex, direction, false);
+  }
+
+  public void doubleAtomHit(String direction, String currentHex, String originHex){
+    handleEncounter(EncounterType.DOUBLE_HIT);
+    // Calculate the direction to move in
+    ignoredAtoms.add(currentHex);
+    System.out.println("Pre Direction: " + direction);
+    direction =
+            switch (direction) {
+              case "-1, 0, +1" ->
+                      "+1, 0, -1"; // Implement traversal rules for reflection
+              case "0, -1, +1" ->
+                      "0, +1, -1"; // Implement traversal rules for reflection
+              case "+1, -1, 0" ->
+                      "-1, +1, 0"; // Implement traversal rules for reflection
+              case "+1, 0, -1" ->
+                      "-1, 0, +1"; // Implement traversal rules for reflection
+              case "0, +1 , -1", "0, +1, -1" ->
+                      "0, -1, +1"; // Implement traversal rules for reflection
+                default -> direction;
+            };
+    System.out.println("Direction: " + direction);
+    int[] directionValues = directionSelection(direction);
+    int dx = directionValues[0];
+    int dy = directionValues[1];
+    int dz = directionValues[2];
+    String[] coordinates = currentHex.split(",");
+    int x = Integer.parseInt(coordinates[0]);
+    int y = Integer.parseInt(coordinates[1]);
+    int z = Integer.parseInt(coordinates[2]);
+
+    String[] coordinatesOrigin = originHex.split(",");
+    int originX = Integer.parseInt(coordinatesOrigin[0]);
+    int originY = Integer.parseInt(coordinatesOrigin[1]);
+    int originZ = Integer.parseInt(coordinatesOrigin[2]);
+    int lastX,lastY,lastZ;
+    int[] lastHex = findLastHex(x, y, z, dx, dy, dz);
+    lastX = lastHex[0];
+    lastY = lastHex[1];
+    lastZ = lastHex[2];
+    //hexManager.alterHexagon(lastX, lastY, lastZ, Color.YELLOW);
+    //hexManager.alterHexagon(originX, originY, originZ, Color.YELLOW);
+    EncounterType encounterType = EncounterType.DOUBLE_HIT;
+    collisionDetection(currentHex, direction, false);
   }
 
   public int[] directionSelection(String direction) {
@@ -434,6 +567,63 @@ public class Game {
         break;
     }
     return new int[] {dx, dy, dz};
+  }
+  public void hexDisplayer(String originHex, int lastX, int lastY, int lastZ, String direction) {
+    String[] coordinatesOrigin = originHex.split(",");
+    int originX = Integer.parseInt(coordinatesOrigin[0]);
+    int originY = Integer.parseInt(coordinatesOrigin[1]);
+    int originZ = Integer.parseInt(coordinatesOrigin[2]);
+    int degree = getDegree(direction);
+    String lastCoordinates = lastX + "," + lastY + "," + lastZ;
+    switch (lastEncounterType) {
+      case DEFLECTION:
+        // Handle deflection
+        gui.disableButtonAt(lastCoordinates, degree);
+        hexManager.alterHexagon(originX, originY, originZ, Color.BLUE);
+        hexManager.alterHexagon(lastX, lastY, lastZ, Color.BLUE);
+        break;
+      case DIRECT_HIT:
+        hexManager.alterHexagon(originX, originY, originZ, Color.GREEN);
+        break;
+      case DOUBLE_HIT:
+        hexManager.alterHexagon(lastX, lastY, lastZ, Color.YELLOW);
+        break;
+      case NO_ENCOUNTER:
+        gui.disableButtonAt(lastCoordinates, degree);
+        hexManager.alterHexagon(originX, originY, originZ, Color.PURPLE);
+        hexManager.alterHexagon(lastX, lastY, lastZ, Color.PURPLE);
+      default:
+        // Handle no encounter
+        break;
+    }
+  }
+
+  private static int getDegree(String direction) {
+    int degree = 0;
+
+    degree = switch (direction) {
+      case "+1, 0, -1" -> 0; // Reverse traversal rules for degree 0
+      case "0, +1, -1" -> 60; // Reverse traversal rules for degree 60
+      case "-1, +1, 0" -> 120; // Reverse traversal rules for degree 120
+      case "-1, 0, +1" -> 180; // Reverse traversal rules for degree 180
+      case "0, -1, +1" -> 240; // Reverse traversal rules for degree 240
+      case "+1, -1, 0" -> 300; // Reverse traversal rules for degree 300
+      default -> throw new IllegalArgumentException("Invalid direction: " + direction);
+    };
+    return degree;
+  }
+
+
+  public boolean isInMultipleNeighbors(String currentHex) {
+    Map<String, List<String>> atomNeighbors = atomsEffectiveRange();
+    int counter = 0;
+
+    for(List<String> neighbors : atomNeighbors.values()){
+      if(neighbors.contains(currentHex)){
+        counter++;
+      }
+    }
+    return counter >= 2;
   }
 
   public int[] findLastHex(int x, int y, int z, int dx, int dy, int dz){

@@ -17,8 +17,8 @@ public class GameTest {
     @BeforeEach
     public void setUp() {
         mockHexManager = Mockito.mock(HexagonManager.class);
-//        mockGUI = Mockito.mock(GUI.class);
-        testGame = new Game(mockHexManager);
+        GUI mockGUI = Mockito.mock(GUI.class);
+        testGame = new Game(mockHexManager, mockGUI);
 
 //        Pane mockPane = Mockito.mock(Pane.class);
 //        ObservableList<Node> mockList = FXCollections.observableArrayList();

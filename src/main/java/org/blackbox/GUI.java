@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javafx.application.Application;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
@@ -11,6 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -19,10 +21,11 @@ import javafx.stage.Stage;
  * and managing the graphical user interface of the application.
  */
 public class GUI extends Application {
-  Game myGame = new Game(hexManager);
+  Game myGame = new Game(hexManager, this);
   // Constants for the GUI
   public static final int HIGHEST_COORDINATE =
       4; // Highest coordinate value which also sets the over-all size of the grid
+  private static int counter = 0;
   public static final float GUI_SIZE = 1200;
   private static final double HEX_SIZE = 55; // Size of the individual hexagon
   private static final double HEX_HEIGHT =
@@ -123,8 +126,8 @@ public class GUI extends Application {
 
         // Used to print out the grid locations on the hexagons
         // Create a new Text object for the grid location
-        Text gridLocation = new Text(posX, posY, x + "," + y + "," + z);
-        gridLocation.setFont(new Font(10)); // Set the font size
+        Text gridLocation = new Text(posX, posY, String.valueOf(counter++));
+        gridLocation.setFont(Font.font("Verdana", FontWeight.BOLD, 20)); // Set the font name, style, and size
         gridLocation.setX(posX - HEX_SIZE / 2); // Adjust the x position
         gridLocation.setY(posY); // Adjust the y position
 
@@ -229,6 +232,18 @@ public class GUI extends Application {
     });
 
     return entryPointButton;
+  }
+
+  public void disableButtonAt(String hex, int degree) {
+    for (Node node : root.getChildren()) {
+      if (node instanceof Button button) {
+        ButtonData buttonData = (ButtonData) button.getUserData();
+        if (buttonData != null && buttonData.hex().equals(hex) && buttonData.degree() == degree) {
+          button.setDisable(true);
+          button.setStyle("-fx-background-color: black;");
+        }
+      }
+    }
   }
 
   // Method to start the application
