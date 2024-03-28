@@ -1,5 +1,6 @@
 package org.blackbox;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,21 +27,23 @@ public class GUI extends Application {
   // Constants for the GUI
   public static final int HIGHEST_COORDINATE =
       4; // Highest coordinate value which also sets the over-all size of the grid
-  public static final float GUI_SIZE = 1200;
-  private Label scoreLabel;
+  public static final float GUI_SIZE = 1000;
+  private Button tutorialButton;
+  public boolean cheatMode = false;
   private static final double HEX_SIZE = 55; // Size of the individual hexagon
   private int guessedAtoms = 0;
   private static final double HEX_HEIGHT =
       Math.sqrt(3) * HEX_SIZE; // Height of the individual hexagon
   private static int counter = 0;
   // Instance variables for the GUI
-  private static Pane root; // Pane to hold the hexagons
+  static Pane root = new Pane(); // Pane to hold the hexagons
+  public boolean atomsRevealed = false;
+  static Pane polylinePane;
   private static HexagonManager hexManager;
-  private static GUI instance;
   // Method to generate the hexagonal grid
-  public Map<String, Integer> gridLocationMap = new HashMap<>();
-  Game myGame = new Game(hexManager, this);
-  Map<String, Integer> orangeHexButtons = new HashMap<String, Integer>();
+  public final Map<String, Integer> gridLocationMap = new HashMap<>();
+  final Game myGame = new Game(hexManager, this);
+  final Map<String, Integer> orangeHexButtons = new HashMap<>();
 
   // Getter methods for the GUI
   public static double getHexHeight() { // Used for drawing onto individual hexes
@@ -77,14 +80,6 @@ public class GUI extends Application {
     GUI.hexManager = hexManager;
   }
 
-  // Singleton pattern for the GUI instance
-  public static GUI getInstance() {
-    if (instance == null) {
-      instance = new GUI();
-    }
-    return instance;
-  }
-
   // Method to get a list of the circles in the root pane
   public static List<Circle> getCircles() {
     return root.getChildren().stream()
@@ -93,8 +88,9 @@ public class GUI extends Application {
         .collect(Collectors.toList());
   }
 
+
   // Method to create a hexagon at a given position
-  private Hexagon createHexagon(int x, int y, int z, double posX, double posY) {
+  Hexagon createHexagon(int x, int y, int z, double posX, double posY) {
     Hexagon hexagon = new Hexagon(x, y, z);
     for (int i = 0; i < 6; i++) {
       hexagon
@@ -103,7 +99,7 @@ public class GUI extends Application {
               posX + HEX_SIZE * Math.cos((i * Math.PI / 3) + Math.PI / 6),
               posY + HEX_SIZE * Math.sin((i * Math.PI / 3) + Math.PI / 6));
     }
-    hexagon.setFill(Color.BLACK);
+    hexagon.setFill(Color.TRANSPARENT);
     hexagon.setStroke(Color.ORANGE);
     hexManager.addHexagon(x, y, z, hexagon);
     return hexagon;
@@ -142,7 +138,7 @@ public class GUI extends Application {
     }
   }
 
-  private Button createHexButton(double posX, double posY, int x, int y, int z) {
+  Button createHexButton(double posX, double posY, int x, int y, int z) {
     Polygon hexagon = new Polygon();
     for(int i = 0; i < 6; i++) {
       double angle = 2.0 * Math.PI / 6 * i;
@@ -211,6 +207,14 @@ public class GUI extends Application {
     return new double[]{offset, posX, posY};
   }
 
+
+  void atomRevealer(){
+    if(!atomsRevealed){
+      myGame.atomReveal();
+      updateButtons();
+    }
+    atomsRevealed = true;
+  }
   // Calculates Button Positions using the calculated values from the positionCalculator
   private double[] calculateButtonPosition(int degree, int x, int y, int z) {
     double[] calculatedValues = positionCalculator(degree, x, y, z);
@@ -245,7 +249,7 @@ public class GUI extends Application {
     }
   }
 
-  private Button createButtonWithAction(Integer degree, double posX, double posY, String hex) {
+  Button createButtonWithAction(Integer degree, double posX, double posY, String hex) {
     Button entryPointButton = new Button();
     entryPointButton.setLayoutX(posX); // Set the x position of the button
     entryPointButton.setLayoutY(posY); // Set the y position of the button
@@ -289,7 +293,7 @@ public class GUI extends Application {
   // Method to start the application
   @Override
   public void start(Stage primaryStage) {
-    root = new Pane();
+    polylinePane = new Pane();
     Scene scene = new Scene(root, GUI_SIZE, GUI_SIZE);
     root.setStyle("-fx-background-color: black;");
     Button startGameButton = new Button("Start Game");
@@ -300,20 +304,57 @@ public class GUI extends Application {
     endGameButton.setLayoutY(70); // Set the y position of the button
     endGameButton.setDisable(true); // Initially disable the end game button
 
+    Button cheatModeButton = new Button("Cheat Mode");
+    cheatModeButton.setLayoutX(10); // Set the x position of the button
+    cheatModeButton.setLayoutY(100); // Set the y position of the button
+    cheatModeButton.setDisable(true);
+
+    Button fullDetailsButton = new Button("Full Details");
+    fullDetailsButton.setLayoutX(10); // Set the x position of the button
+    fullDetailsButton.setLayoutY(130); // Set the y position of the button
+    fullDetailsButton.setDisable(true);
+
     Button revealButton = new Button("Reveal Atoms");
     revealButton.setLayoutX(10); // Set the x position of the button
     revealButton.setLayoutY(40); // Set the y position of the button
     revealButton.setDisable(true); // Initially disable the reveal button
 
-    scoreLabel = new Label("Score: 0"); // Initialize the Label
-    scoreLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20)); // Set the font of the Label
-    scoreLabel.setTextFill(Color.WHITE); // Set the color of the Label
-    scoreLabel.setLayoutX(160); // Set the x position of the Label
-    scoreLabel.setLayoutY(10); // Set the y position of the Label
+    tutorialButton = new Button("Tutorial");
+    tutorialButton.setLayoutX(10); // Set the x position of the button
+    tutorialButton.setLayoutY(160); // Set the y position of the button
+    tutorialButton.setOnAction(
+            e -> {
+              showTutorial();
+              tutorialButton.setDisable(true);
+            }
+    );
 
-    root.getChildren().add(scoreLabel); // Add the Label to the root Pane
 
     generateGrid(root);
+    fullDetailsButton.setOnAction(
+            e -> {
+              if(!cheatMode){
+                root.getChildren().add(polylinePane);
+                cheatMode = true;
+              }
+              atomRevealer();
+              showScore();
+              fullDetailsButton.setDisable(true);
+              fullDetailsButton.setText("Full Details Enabled");
+              fullDetailsButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
+            }
+    );
+    cheatModeButton.setOnAction(
+        e -> {
+          if(!cheatMode){
+            root.getChildren().add(polylinePane);
+            cheatMode = true;
+          }
+          atomRevealer();
+          cheatModeButton.setDisable(true);
+          cheatModeButton.setText("Cheat Mode Enabled");
+          cheatModeButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
+        });
 
     startGameButton.setOnAction(
             e -> {
@@ -321,9 +362,10 @@ public class GUI extends Application {
               myGame.atomSelection();
               myGame.atomsEffectiveRange();
               myGame.storeEntryPoints();
+              cheatModeButton.setDisable(false);
               startGameButton.setDisable(true); // Disable the button after it's clicked
               startGameButton.setText("Game Started"); // Change the text of the button
-              startGameButton.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+              startGameButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
 
               createAllEntryPointButtons(myGame);
 
@@ -338,8 +380,10 @@ public class GUI extends Application {
         e -> {
           endGameButton.setDisable(true); // Disable the button after it's clicked
           endGameButton.setText("Game Ended"); // Change the text of the button
-          endGameButton.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+          endGameButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
           revealButton.setDisable(false);
+          cheatModeButton.setDisable(true);
+          fullDetailsButton.setDisable(false);
           myGame.scoreTracker();
           for (Node node : root.getChildren()) {
             if (node instanceof Button button) {
@@ -349,23 +393,67 @@ public class GUI extends Application {
               }
             }
           }
-          updateScore(myGame.getScore());
+          showScore();
         });
     revealButton.setOnAction(
             e -> {
-              myGame.atomReveal();
-
+              atomRevealer();
               revealButton.setDisable(true); // Disable the button after it's clicked
-              revealButton.setText("Revealed"); // Change the text of the button
+              revealButton.setText("Atoms Revealed"); // Change the text of the button
               revealButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
             });
 
-    root.getChildren().addAll(startGameButton, revealButton, endGameButton); // adds the buttons to the root pane
+    root.getChildren().addAll(startGameButton, revealButton, endGameButton, cheatModeButton, fullDetailsButton, tutorialButton); // adds the buttons to the root pane
 
     primaryStage.setTitle("BlackBox Game");
     primaryStage.setScene(scene);
     primaryStage.show();
   }
+
+  public void showScore() {
+    Stage scoreStage = new Stage();
+
+    Label scoreLabel = new Label("Score: " + myGame.getScore() + "\nRays Shot: " + myGame.raysShot + "\nAtoms Hit: " + myGame.atomsHit + "\nAtoms Missed: " + myGame.atomsMissed
+            + "\nScoring Formula = (" + myGame.raysShot + " * 1) + (" + myGame.atomsHit + " * -5) + (" + myGame.atomsMissed + " * 5) = " + myGame.getScore());
+    scoreLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+    scoreLabel.setTextFill(Color.BLACK);
+
+    Scene scoreScene = new Scene(new Pane(scoreLabel), 550, 150);
+    scoreStage.setScene(scoreScene);
+
+    scoreStage.show();
+  }
+
+  public void showTutorial(){
+    Stage tutorialStage = new Stage();
+
+    Label tutorialLabel = new Label("Welcome to BlackBox!\n\n" +
+            "The objective of the game is to locate the atoms hidden in the black box.\n" +
+            "You can shoot rays into the box from the entry point buttons on the edge of the grid.\n" +
+            "The rays will either be deflected or absorbed by the atoms.\n" +
+            "The deflected rays will exit the box from the edge points on the grid shown by the de-activated purple buttons.\n" +
+            "The absorbed rays will not exit the box.\n" +
+            "You can use the rays to determine the location of the atoms.\n" +
+            "You can also reveal the atoms at any time using the cheat mode button.\n" +
+            "The game ends when you have guessed all the atom locations.\n" +
+            "Good luck and have fun!\n LEGEND: \n" + ("""
+            BLUE = Deflected Once 60 degrees
+            GREEN = Absorbed
+            YELLOW = Deflected 120 Degrees by the contact of a hex which is influenced by two atoms
+            PURPLE = No contact with any atom having a clear path
+            PINK = Deflected by an atom 60 degrees more than once
+            Entry Point Button = ORANGE - not used, YELLOW - fired from, PURPLE - Ray exited at that angle
+            RED = Atom + Dotted Circle around = Area of Effect
+            """));
+    tutorialLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+    tutorialLabel.setTextFill(Color.BLACK);
+    Scene tutorialScene = new Scene(new Pane(tutorialLabel), 1200, 500);
+    tutorialStage.setScene(tutorialScene);
+    tutorialStage.show();
+
+    tutorialStage.setOnCloseRequest(e -> tutorialButton.setDisable(false));
+  }
+
 
   void hexButtonAccuracy(){
     // Clear the existing entries in the map
@@ -393,11 +481,6 @@ public class GUI extends Application {
     return orangeHexButtons;
   }
 
-  public void updateScore(int score) {
-    scoreLabel.setText("Score: " + score + "\nRays Shot: " + myGame.raysShot + "\nAtoms Hit: " + myGame.atomsHit + "\nAtoms Missed: " + myGame.atomsMissed
-      + "\nScoring Formula = (" + myGame.raysShot + " * 1) + (" + myGame.atomsHit + " * -5) + (" + myGame.atomsMissed + " * 5) = " + score);
-  }
-
   public void updateGuessedAtoms(int newGuessedAtoms) {
     // Update the guessedAtoms value
     this.guessedAtoms = newGuessedAtoms;
@@ -423,12 +506,32 @@ public class GUI extends Application {
     endGameButton.setDisable(disabled);
   }
 
+  public static void updateButtons(){
+    List<Button> buttonsToModify = new ArrayList<>();
+
+    for (Node node : root.getChildren()) {
+      if (node instanceof Button button) {
+          buttonsToModify.add(button);
+      }
+    }
+
+    for (Button button : buttonsToModify) {
+      button.toFront();
+      if(button.getShape() instanceof Polygon){
+        button.setDisable(false);
+      }
+    }
+  }
+
+
   /**
    * Hexagon class that extends the Polygon class from JavaFX. This class represents a hexagon in
    * the grid.
    */
   public static class Hexagon extends Polygon {
-    private int x, y, z;
+    private final int x;
+      private final int y;
+      private final int z;
 
     public Hexagon(int x, int y, int z) {
       this.x = x;

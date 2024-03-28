@@ -15,7 +15,7 @@ public class HexagonManager {
           {-1, +1, 0}, {-1, 0, +1}, {0, -1, +1}
   };
   // Map to store hexagons for easy access
-  private Map<String, GUI.Hexagon> hexagons;
+  private final Map<String, GUI.Hexagon> hexagons;
 
   // Constructor initializes the hexagons map.
   public HexagonManager() {
@@ -61,5 +61,7 @@ public class HexagonManager {
       Color transparentColor = Color.color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 0.7);
       hex.setFill(transparentColor);
     }
+    GUI.updateButtons();
   }
+
 }
