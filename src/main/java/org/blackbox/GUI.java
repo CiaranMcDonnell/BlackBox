@@ -381,7 +381,9 @@ public class GUI extends Application {
           endGameButton.setDisable(true); // Disable the button after it's clicked
           endGameButton.setText("Game Ended"); // Change the text of the button
           endGameButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
-          revealButton.setDisable(false);
+          if(!atomsRevealed){
+            revealButton.setDisable(false);
+          }
           cheatModeButton.setDisable(true);
           fullDetailsButton.setDisable(false);
           myGame.scoreTracker();
@@ -427,27 +429,37 @@ public class GUI extends Application {
   public void showTutorial(){
     Stage tutorialStage = new Stage();
 
-    Label tutorialLabel = new Label("Welcome to BlackBox!\n\n" +
-            "The objective of the game is to locate the atoms hidden in the black box.\n" +
-            "You can shoot rays into the box from the entry point buttons on the edge of the grid.\n" +
-            "The rays will either be deflected or absorbed by the atoms.\n" +
-            "The deflected rays will exit the box from the edge points on the grid shown by the de-activated purple buttons.\n" +
-            "The absorbed rays will not exit the box.\n" +
-            "You can use the rays to determine the location of the atoms.\n" +
-            "You can also reveal the atoms at any time using the cheat mode button.\n" +
-            "The game ends when you have guessed all the atom locations.\n" +
-            "Good luck and have fun!\n LEGEND: \n" + ("""
-            BLUE = Deflected Once 60 degrees
-            GREEN = Absorbed
-            YELLOW = Deflected 120 Degrees by the contact of a hex which is influenced by two atoms
-            PURPLE = No contact with any atom having a clear path
-            PINK = Deflected by an atom 60 degrees more than once
-            Entry Point Button = ORANGE - not used, YELLOW - fired from, PURPLE - Ray exited at that angle
-            RED = Atom + Dotted Circle around = Area of Effect
-            """));
+    Label tutorialLabel = new Label("""
+    **Welcome to BlackBox!**
+
+    The objective of the game is simple:
+    - Your mission is to locate the atoms hidden inside the black box.
+    - You can shoot rays into the box from the entry point buttons located on the edge of the grid.
+    - The rays will interact with the atoms in two possible ways: they will either be deflected or absorbed.
+    - Deflected rays will exit the box from the edge points on the grid. The exit points are shown by the de-activated purple buttons.
+    - Absorbed rays will not exit the box.
+    - You can use the behavior of the rays to determine the location of the atoms.
+    - If you're feeling stuck, you can reveal the atoms at any time using the cheat mode button.
+    - The game ends when you have successfully guessed all the atom locations.
+    - The lower your score at the end the better, formula shown in score window at end of game.
+
+    Good luck and have fun!
+
+    **LEGEND:**
+    - **BLUE** = Ray deflected once at 60 degrees. Exit location is marked.
+    - **GREEN** = Ray absorbed by an atom. No exit location.
+    - **YELLOW** = Ray deflected by two atoms, sent 180 degrees back to source. No exit location marked.
+    - **PURPLE** = Ray made no contact with any atom and had a clear path. Exit location marked.
+    - **PINK** = Ray deflected by an atom at 60 degrees more than once. Exit location marked.
+    - **Entry Point Button** = ORANGE when not used, YELLOW when fired from, PURPLE when ray exited at that angle.
+    - **RED** = Atom. A dotted circle around it indicates the area of effect.
+    - **BROWN** = Ray deflected twice by two atoms affecting one hex, causing a 120-degree change and making the ray
+    leave the box before hitting another atom. Exit location marked.
+    """);
+
     tutorialLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
     tutorialLabel.setTextFill(Color.BLACK);
-    Scene tutorialScene = new Scene(new Pane(tutorialLabel), 1200, 500);
+    Scene tutorialScene = new Scene(new Pane(tutorialLabel), 1200, 750);
     tutorialStage.setScene(tutorialScene);
     tutorialStage.show();
 
