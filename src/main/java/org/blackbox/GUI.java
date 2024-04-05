@@ -450,6 +450,7 @@ public class GUI extends Application {
     - **GREEN** = Ray absorbed by an atom. No exit location.
     - **YELLOW** = Ray deflected by two atoms, sent 180 degrees back to source. No exit location marked.
     - **PURPLE** = Ray made no contact with any atom and had a clear path. Exit location marked.
+    - **WHITE** = Ray reflected by an atom at it's entry point. Exit location marked.
     - **PINK** = Ray deflected by an atom at 60 degrees more than once. Exit location marked.
     - **Entry Point Button** = ORANGE when not used, YELLOW when fired from, PURPLE when ray exited at that angle.
     - **RED** = Atom. A dotted circle around it indicates the area of effect.
