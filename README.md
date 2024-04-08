@@ -25,6 +25,9 @@ git clone https://github.com/CiaranMcDonnell/BlackBox.git
 or
 
 * Install the latest release
+```bash
+[git clone https://github.com/CiaranMcDonnell/BlackBox.git](https://github.com/CiaranMcDonnell/BlackBox/releases/tag/release)
+```
 
 ### Built With
 * Java
