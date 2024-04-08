@@ -24,9 +24,9 @@ git clone https://github.com/CiaranMcDonnell/BlackBox.git
 ```
 or
 
-* Install the latest release
+* Install the latest release jar
 ```bash
-[git clone https://github.com/CiaranMcDonnell/BlackBox.git](https://github.com/CiaranMcDonnell/BlackBox/releases/tag/release)
+https://github.com/CiaranMcDonnell/BlackBox/releases/tag/release
 ```
 
 ### Built With
