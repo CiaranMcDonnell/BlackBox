@@ -1,7 +1,6 @@
 package org.blackbox;
 
 import java.util.*;
-
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.util.Pair;
@@ -12,21 +11,16 @@ import javafx.util.Pair;
  */
 public class Game {
   private final Map<String, List<Integer>> entryPoints;
-  public int raysShot = 0, atomsGuesses = 0, atomsHit = 0, atomsMissed;
-  private int score;
-  private int deflectionCounter = 0;
   private final List<String> atomLocations;
   private final HexagonManager hexManager;
   private final GUI gui;
   private final List<String> ignoredAtoms;
-  private String storedOriginHex;
-  public enum EncounterType {
-    NO_ENCOUNTER,
-    DIRECT_HIT,
-    DEFLECTION,
-    DOUBLE_HIT
-  }
+  public int raysShot = 0, atomsGuesses = 0, atomsHit = 0, atomsMissed;
   public EncounterType lastEncounterType = EncounterType.NO_ENCOUNTER;
+  private int score;
+  private int deflectionCounter = 0;
+  private String storedOriginHex;
+
   /**
    * Constructs a new Game with the given HexagonManager.
    *
@@ -38,6 +32,22 @@ public class Game {
     atomLocations = new ArrayList<>();
     this.hexManager = hexManager;
     this.ignoredAtoms = new ArrayList<>();
+  }
+
+  private static int getDegree(String direction) {
+    int degree;
+
+    degree =
+        switch (direction) {
+          case "+1, 0, -1" -> 0; // Reverse traversal rules for degree 0
+          case "0, +1, -1" -> 60; // Reverse traversal rules for degree 60
+          case "-1, +1, 0" -> 120; // Reverse traversal rules for degree 120
+          case "-1, 0, +1" -> 180; // Reverse traversal rules for degree 180
+          case "0, -1, +1" -> 240; // Reverse traversal rules for degree 240
+          case "+1, -1, 0" -> 300; // Reverse traversal rules for degree 300
+          default -> throw new IllegalArgumentException("Invalid direction: " + direction);
+        };
+    return degree;
   }
 
   /**
@@ -204,7 +214,7 @@ public class Game {
   }
 
   public void traversalRules(String originHex, int degree) {
-    String direction = null;
+    String direction;
     // Implement traversal rules for degree 300
     direction =
         switch (degree) {
@@ -214,10 +224,11 @@ public class Game {
           case 180 -> "+1, 0, -1"; // Implement traversal rules for degree 180
           case 240 -> "0, +1, -1"; // Implement traversal rules for degree 240
           case 300 -> "-1, +1, 0";
-          default -> direction;
+          default -> null;
         };
     collisionDetection(originHex, direction, true);
   }
+
   public void handleEncounter(EncounterType encounterType) {
     lastEncounterType = encounterType; // Store the last encounter type
 
@@ -251,8 +262,10 @@ public class Game {
 
     Map<String, List<String>> atomNeighbors = atomsEffectiveRange();
     if (atomLocations.contains(storedOriginHex)
-        || atomNeighbors.values().stream().anyMatch(neighbors -> neighbors.contains(storedOriginHex))
-            && getEntryPointsMap().containsKey(storedOriginHex) && originCheck) {
+        || atomNeighbors.values().stream()
+                .anyMatch(neighbors -> neighbors.contains(storedOriginHex))
+            && getEntryPointsMap().containsKey(storedOriginHex)
+            && originCheck) {
       System.out.println("Collision detected at origin: " + startingHex);
       hexManager.alterHexagon(x, y, z, Color.WHITE);
       return;
@@ -262,8 +275,12 @@ public class Game {
     polyline.setStrokeWidth(3);
     polyline.setStroke(Color.CYAN);
 
-    while (x >= -GUI.HIGHEST_COORDINATE && x <= GUI.HIGHEST_COORDINATE && y >= -GUI.HIGHEST_COORDINATE && y <= GUI.HIGHEST_COORDINATE
-            && z >= -GUI.HIGHEST_COORDINATE && z <= GUI.HIGHEST_COORDINATE) {
+    while (x >= -GUI.HIGHEST_COORDINATE
+        && x <= GUI.HIGHEST_COORDINATE
+        && y >= -GUI.HIGHEST_COORDINATE
+        && y <= GUI.HIGHEST_COORDINATE
+        && z >= -GUI.HIGHEST_COORDINATE
+        && z <= GUI.HIGHEST_COORDINATE) {
       String currentHex = x + "," + y + "," + z;
       System.out.println("Current Hex: " + currentHex);
       double currentXCenter = GUI.getHexHeight() * (x + y / 2.0) + (GUI.GUI_SIZE / 2);
@@ -314,17 +331,18 @@ public class Game {
     int lastX = lastHex[0];
     int lastY = lastHex[1];
     int lastZ = lastHex[2];
-    if(EncounterType.NO_ENCOUNTER == lastEncounterType){
-      hexDisplayer(storedOriginHex, lastX, lastY, lastZ, direction);
+    if (EncounterType.NO_ENCOUNTER == lastEncounterType) {
+      hexDisplay(storedOriginHex, lastX, lastY, lastZ, direction);
     }
 
     // The x, y, and z coordinates of the last hexagon in the traversal are now stored in x, y, and
     // z
     System.out.println("Last hexagon in traversal: " + lastX + "," + lastY + "," + lastZ);
-    hexDisplayer(storedOriginHex, lastX, lastY, lastZ, direction);
+    hexDisplay(storedOriginHex, lastX, lastY, lastZ, direction);
   }
 
-  public void atomEncounter(String originHex, String direction, String currentHex, String specificAtom) {
+  public void atomEncounter(
+      String originHex, String direction, String currentHex, String specificAtom) {
 
     // Split the current coordinates
     String[] currentCoordinates = currentHex.split(",");
@@ -344,55 +362,66 @@ public class Game {
     int nextZ = currentZ + dz;
 
     String nextPos = nextX + "," + nextY + "," + nextZ;
-    String deflectionPosLowerCornerRight = (currentX) + "," + (currentY -1) + "," + (currentZ + 1);
+    String deflectionPosLowerCornerRight = (currentX) + "," + (currentY - 1) + "," + (currentZ + 1);
     String deflectionPosLowerCornerLeft = (currentX + 1) + "," + (currentY - 1) + "," + currentZ;
     String deflectionPosUpperCornerRight = (currentX - 1) + "," + (currentY + 1) + "," + (currentZ);
     String deflectionPosUpperCornerLeft = (currentX) + "," + (currentY + 1) + "," + (currentZ - 1);
     String deflectionPosRight = (currentX + 1) + "," + currentY + "," + (currentZ - 1);
     String deflectionPosLeft = (currentX - 1) + "," + currentY + "," + (currentZ + 1);
-    //ignoredAtoms.clear();
+    // ignoredAtoms.clear();
     System.out.println("Specific Atom = " + specificAtom);
     // Check if the hex is within 2 or more atom Neighbors
-    if(isInMultipleNeighbors(currentHex) ){
+    if (isInMultipleNeighbors(currentHex)) {
       System.out.println("Two Atoms approached, Reflection");
-      if(atomLocations.contains(deflectionPosLeft)){
-          doubleAtomHit(direction, currentHex, originHex, atomLocations.contains(deflectionPosUpperCornerRight) || atomLocations.contains(deflectionPosUpperCornerLeft), false, true);
-      }
-      else doubleAtomHit(direction, currentHex, originHex, atomLocations.contains(deflectionPosUpperCornerRight) || atomLocations.contains(deflectionPosUpperCornerLeft), atomLocations.contains(deflectionPosRight), false);
+      if (atomLocations.contains(deflectionPosLeft)) {
+        doubleAtomHit(
+            direction,
+            currentHex,
+                atomLocations.contains(deflectionPosUpperCornerRight)
+                || atomLocations.contains(deflectionPosUpperCornerLeft),
+            false,
+            true);
+      } else
+        doubleAtomHit(
+            direction,
+            currentHex,
+                atomLocations.contains(deflectionPosUpperCornerRight)
+                || atomLocations.contains(deflectionPosUpperCornerLeft),
+            atomLocations.contains(deflectionPosRight),
+            false);
     }
     // Check if the next position is in the atom locations
-    else if(atomLocations.contains(nextPos)) {
+    else if (atomLocations.contains(nextPos)) {
       directHit(storedOriginHex);
       System.out.println("Direct Hit: " + nextPos);
     }
     // lower deflection
-    else if(specificAtom.equals(deflectionPosRight)){
+    else if (specificAtom.equals(deflectionPosRight)) {
       System.out.println("Direct Right Deflection");
-      deflectionHit(direction, currentHex, originHex, dx != 1, true);
-    }
-    else if(specificAtom.equals(deflectionPosLeft)){
+      deflectionHit(direction, currentHex, dx != 1, true);
+    } else if (specificAtom.equals(deflectionPosLeft)) {
       System.out.println("Direct Left Deflection");
-      deflectionHit(direction, currentHex, originHex, dx != 1, true);
-    }
-    else if (specificAtom.equals(deflectionPosLowerCornerLeft) || specificAtom.equals(deflectionPosLowerCornerRight)) {
+      deflectionHit(direction, currentHex, dx != 1, true);
+    } else if (specificAtom.equals(deflectionPosLowerCornerLeft)
+        || specificAtom.equals(deflectionPosLowerCornerRight)) {
       System.out.println("Lower Deflection");
       boolean upper = false;
-      deflectionHit(direction, currentHex, originHex, upper, false);
+      deflectionHit(direction, currentHex, upper, false);
     }
     // upper deflection
-    else if (specificAtom.equals(deflectionPosUpperCornerRight) || specificAtom.equals(deflectionPosUpperCornerLeft)) {
+    else if (specificAtom.equals(deflectionPosUpperCornerRight)
+        || specificAtom.equals(deflectionPosUpperCornerLeft)) {
       System.out.println("Upper Deflection");
       boolean upper = true;
-      deflectionHit(direction, currentHex, originHex, upper, false);
-    }
-    else {
+      deflectionHit(direction, currentHex, upper, false);
+    } else {
       System.out.println("No collision detected");
       noAtomEncounter(originHex, direction);
     }
   }
 
   public void directHit(String storedOriginHex) {
-    //handleEncounter(EncounterType.DIRECT_HIT);
+    // handleEncounter(EncounterType.DIRECT_HIT);
     String[] coordinates = storedOriginHex.split(",");
     int x = Integer.parseInt(coordinates[0]);
     int y = Integer.parseInt(coordinates[1]);
@@ -401,220 +430,193 @@ public class Game {
   }
 
   // Temporary Implementation of Deflection, collision after deflection not yet implemented.
-  public void deflectionHit(String direction, String currentHex, String originHex, boolean upper, boolean side) {
+  public void deflectionHit(
+          String direction, String currentHex, boolean upper, boolean side) {
     deflectionCounter++;
     handleEncounter(EncounterType.DEFLECTION);
     // Calculate the direction to move in
     ignoredAtoms.add(currentHex);
-    if(side){
-        System.out.println("Normal Side true");
-        System.out.println("Pre Direction: " + direction);
-        direction =
-                switch (direction) {
-                    case "-1, 0, +1", "-1, +1, 0" ->
-                            "0, +1, -1"; // Implement traversal rules for side deflection
-                    case "0, -1, +1" ->
-                            "+1, -1, 0"; // Implement traversal rules for side deflection
-                    case "+1, -1, 0" ->
-                            "0, -1, +1"; // Implement traversal rules for side deflection
-                    case "+1, 0, -1", "0, +1, -1" ->
-                            "-1, +1, 0"; // Implement traversal rules for side deflection
-                    case "0, +1 , -1" ->
-                            "-1, 0, +1"; // Implement traversal rules for side deflection
-                    default -> direction;
-                };
-    }
-    else if (upper) {
+    if (side) {
+      System.out.println("Normal Side true");
+      System.out.println("Pre Direction: " + direction);
+      direction =
+          switch (direction) {
+            case "-1, 0, +1", "-1, +1, 0" ->
+                "0, +1, -1"; // Implement traversal rules for side deflection
+            case "0, -1, +1" -> "+1, -1, 0"; // Implement traversal rules for side deflection
+            case "+1, -1, 0" -> "0, -1, +1"; // Implement traversal rules for side deflection
+            case "+1, 0, -1", "0, +1, -1" ->
+                "-1, +1, 0"; // Implement traversal rules for side deflection
+            case "0, +1 , -1" -> "-1, 0, +1"; // Implement traversal rules for side deflection
+            default -> direction;
+          };
+    } else if (upper) {
       System.out.println("Upper true");
       System.out.println("Pre Direction: " + direction);
       direction =
-              switch (direction) {
-                case "0, -1, +1" ->
-                        "-1, +1, 0"; // Implement traversal rules for upper deflection
-                case "+1, -1, 0", "0, +1, -1" ->
-                        "+1, 0, -1"; // Implement traversal rules for upper deflection
-                case "-1, 0, +1" ->
-                        "0, -1, +1"; // Implement traversal rules for upper deflection
-                case "+1, 0, -1" ->
-                        "+1, -1, 0"; // Implement traversal rules for upper deflection
-                case "0, +1 , -1" ->
-                        "+1, +1, 0"; // Implement traversal rules for upper deflection
-                  case "-1, +1, 0" ->
-                        "-1, 0, +1"; // Implement traversal rules for upper deflection
-                default -> direction;
-              };
+          switch (direction) {
+            case "0, -1, +1" -> "-1, +1, 0"; // Implement traversal rules for upper deflection
+            case "+1, -1, 0", "0, +1, -1" ->
+                "+1, 0, -1"; // Implement traversal rules for upper deflection
+            case "-1, 0, +1" -> "0, -1, +1"; // Implement traversal rules for upper deflection
+            case "+1, 0, -1" -> "+1, -1, 0"; // Implement traversal rules for upper deflection
+            case "0, +1 , -1" -> "+1, +1, 0"; // Implement traversal rules for upper deflection
+            case "-1, +1, 0" -> "-1, 0, +1"; // Implement traversal rules for upper deflection
+            default -> direction;
+          };
     } else {
       System.out.println("Upper false");
       System.out.println("Pre Direction: " + direction);
       direction =
-              switch (direction) {
-                case "+1, 0, -1" ->
-                        "0, +1, -1"; // Implement traversal rules for lower deflection
-                case "0, +1, -1", "0, -1, +1" ->
-                        "-1, 0, +1"; // Implement traversal rules for lower deflection
-                case "-1, +1, 0" ->
-                        "+1, -1, 0"; // Implement traversal rules for lower deflection
-                case "-1, 0, +1" ->
-                        "-1, +1, 0"; // Implement traversal rules for lower deflection
-                case "+1, -1, 0" ->
-                        "+1, 0, -1"; // Implement traversal rules for lower deflection
-                  default -> direction;
-              };
+          switch (direction) {
+            case "+1, 0, -1" -> "0, +1, -1"; // Implement traversal rules for lower deflection
+            case "0, +1, -1", "0, -1, +1" ->
+                "-1, 0, +1"; // Implement traversal rules for lower deflection
+            case "-1, +1, 0" -> "+1, -1, 0"; // Implement traversal rules for lower deflection
+            case "-1, 0, +1" -> "-1, +1, 0"; // Implement traversal rules for lower deflection
+            case "+1, -1, 0" -> "+1, 0, -1"; // Implement traversal rules for lower deflection
+            default -> direction;
+          };
     }
 
     System.out.println("Direction: " + direction);
     collisionDetection(currentHex, direction, false);
   }
 
-  public void doubleAtomHit(String direction, String currentHex, String originHex, Boolean upper, Boolean leftSide, Boolean rightSide){
+  public void doubleAtomHit(
+      String direction,
+      String currentHex,
+      Boolean upper,
+      Boolean leftSide,
+      Boolean rightSide) {
     handleEncounter(EncounterType.DOUBLE_HIT);
     // Calculate the direction to move in
-    if(reversalChecker(currentHex, direction)){
-        System.out.println("Reversal Detected");
-        String[] coordinatesOrigin = storedOriginHex.split(",");
-        int originX = Integer.parseInt(coordinatesOrigin[0]);
-        int originY = Integer.parseInt(coordinatesOrigin[1]);
-        int originZ = Integer.parseInt(coordinatesOrigin[2]);
-        hexManager.alterHexagon(originX, originY, originZ, Color.YELLOW);
-        return;
+    if (reversalChecker(currentHex, direction)) {
+      System.out.println("Reversal Detected");
+      String[] coordinatesOrigin = storedOriginHex.split(",");
+      int originX = Integer.parseInt(coordinatesOrigin[0]);
+      int originY = Integer.parseInt(coordinatesOrigin[1]);
+      int originZ = Integer.parseInt(coordinatesOrigin[2]);
+      hexManager.alterHexagon(originX, originY, originZ, Color.YELLOW);
+      return;
     }
 
     ignoredAtoms.add(currentHex);
     System.out.println("Pre Direction: " + direction);
-    if(leftSide && upper){
-        System.out.print("Left Side true upper true");
-        direction =
-                switch (direction) {
-                    case "-1, 0, +1" ->
-                            "+1, -1, 0"; // Implement traversal rules for 120 degree change
-                    case "0, -1, +1", "-1, +1, 0" ->
-                            "+1, 0, -1"; // Implement traversal rules for 120 degree change
-                    case "+1, -1, 0", "0, +1, -1" ->
-                            "-1, 0, +1"; // Implement traversal rules for 120 degree change
-                    case "+1, 0, -1" ->
-                            "0, -1, +1"; // Implement traversal rules for 120 degree change
-                    default -> direction;
-                };
+    if (leftSide && upper) {
+      System.out.print("Left Side true upper true");
+      direction =
+          switch (direction) {
+            case "-1, 0, +1" -> "+1, -1, 0"; // Implement traversal rules for 120 degree change
+            case "0, -1, +1", "-1, +1, 0" ->
+                "+1, 0, -1"; // Implement traversal rules for 120 degree change
+            case "+1, -1, 0", "0, +1, -1" ->
+                "-1, 0, +1"; // Implement traversal rules for 120 degree change
+            case "+1, 0, -1" -> "0, -1, +1"; // Implement traversal rules for 120 degree change
+            default -> direction;
+          };
+    } else if (rightSide && upper) {
+      System.out.print("Right Side true upper true");
+      direction =
+          switch (direction) {
+            case "-1, 0, +1" -> "0, +1, -1"; // Implement traversal rules for 120 degree change
+            case "0, -1, +1" -> "+1, 0, -1"; // Implement traversal rules for 120 degree change
+            case "+1, -1, 0", "0, +1 , -1" ->
+                "-1, 0, +1"; // Implement traversal rules for 120 degree change
+            case "+1, 0, -1" -> "-1, +1, 0"; // Implement traversal rules for 120 degree change
+            case "0, +1, -1" -> "+1, -1, 0"; // Implement traversal rules for 120 degree change
+            case "-1, +1, 0" -> "+1, 0, -1"; // Implement traversal rules for 120 degree
+            default -> direction;
+          };
+    } else if (leftSide || rightSide) {
+      System.out.print("Left Side true");
+      direction =
+          switch (direction) {
+            case "-1, 0, +1" -> "0, +1, -1"; // Implement traversal rules for 120 degree change
+            case "0, -1, +1" -> "+1, 0, -1"; // Implement traversal rules for 120 degree change
+            case "+1, -1, 0", "0, +1 , -1" ->
+                "-1, 0, +1"; // Implement traversal rules for 120 degree change
+            case "+1, 0, -1" -> "-1, +1, 0"; // Implement traversal rules for 120 degree change
+            case "0, +1, -1", "-1, +1, 0" ->
+                "+1, -1, 0"; // Implement traversal rules for 120 degree change
+            default -> direction;
+          };
     }
-    else if(rightSide && upper){
-        System.out.print("Right Side true upper true");
-        direction =
-                switch (direction) {
-                  case "-1, 0, +1" -> "0, +1, -1"; // Implement traversal rules for 120 degree change
-                  case "0, -1, +1" -> "+1, 0, -1"; // Implement traversal rules for 120 degree change
-                  case "+1, -1, 0", "0, +1 , -1" -> "-1, 0, +1"; // Implement traversal rules for 120 degree change
-                  case "+1, 0, -1" -> "-1, +1, 0"; // Implement traversal rules for 120 degree change
-                    case "0, +1, -1" -> "+1, -1, 0"; // Implement traversal rules for 120 degree change
-                  case "-1, +1, 0" -> "+1, 0, -1"; // Implement traversal rules for 120 degree
-                    default -> direction;
-                };
-    }
-    else if(leftSide && !upper){
-        System.out.print("Left Side true");
-        direction =
-                switch (direction) {
-                    case "-1, 0, +1" ->
-                            "0, +1, -1"; // Implement traversal rules for 120 degree change
-                    case "0, -1, +1" ->
-                            "+1, 0, -1"; // Implement traversal rules for 120 degree change
-                    case "+1, -1, 0", "0, +1 , -1" ->
-                            "-1, 0, +1"; // Implement traversal rules for 120 degree change
-                    case "+1, 0, -1" ->
-                            "-1, +1, 0"; // Implement traversal rules for 120 degree change
-                    case "0, +1, -1", "-1, +1, 0" ->
-                            "+1, -1, 0"; // Implement traversal rules for 120 degree change
-                    default -> direction;
-                };
-    }
-    else if(rightSide && !upper){
-        System.out.print("Right Side true");
-        direction =
-                switch (direction) {
-                    case "-1, 0, +1" ->
-                            "0, +1, -1"; // Implement traversal rules for 120 degree change
-                    case "0, -1, +1" ->
-                            "+1, 0, -1"; // Implement traversal rules for 120 degree change
-                    case "+1, -1, 0", "0, +1 , -1" ->
-                            "-1, 0, +1"; // Implement traversal rules for 120 degree change
-                    case "+1, 0, -1" ->
-                            "-1, +1, 0"; // Implement traversal rules for 120 degree change
-                    case "0, +1, -1", "-1, +1, 0" ->
-                            "+1, -1, 0"; // Implement traversal rules for 120 degree change
-                    default -> direction;
-                };
-    }
-    else if(upper){
+    else if (upper) {
       System.out.print("Upper true");
       direction =
-              switch (direction) {
-                case "-1, 0, +1", "0, +1, -1" ->
-                        "+1, -1, 0"; // Implement traversal rules for 120 degree change
-                case "0, -1, +1", "+1, -1, 0" ->
-                        "0, +1, -1"; // Implement traversal rules for 120 degree change
-                  case "+1, 0, -1", "-1, +1, 0" ->
-                        "0, -1, +1"; // Implement traversal rules for 120 degree change
-                case "0, +1 , -1" ->
-                        "-1, 0, +1"; // Implement traversal rules for 120 degree change
-                  default -> direction;
-              };
-    }
-    else{
+          switch (direction) {
+            case "-1, 0, +1", "0, +1, -1" ->
+                "+1, -1, 0"; // Implement traversal rules for 120 degree change
+            case "0, -1, +1", "+1, -1, 0" ->
+                "0, +1, -1"; // Implement traversal rules for 120 degree change
+            case "+1, 0, -1", "-1, +1, 0" ->
+                "0, -1, +1"; // Implement traversal rules for 120 degree change
+            case "0, +1 , -1" -> "-1, 0, +1"; // Implement traversal rules for 120 degree change
+            default -> direction;
+          };
+    } else {
       System.out.print("Upper false\n");
       direction =
-              switch (direction) {
-                case "-1, 0, +1", "+1, -1, 0" ->
-                        "0, +1, -1"; // Implement traversal rules for 120 degree change
-                case "0, -1, +1", "+1, 0, -1" ->
-                        "-1, +1, 0"; // Implement traversal rules for 120 degree change
-                  case "0, +1 , -1", "0, +1, -1" ->
-                        "-1, 0, +1"; // Implement traversal rules for 120 degree change
-                  case "-1, +1, 0" ->
-                        "0, -1, +1"; // Implement traversal rules for 120 degree change
-                default -> direction;
-              };
+          switch (direction) {
+            case "-1, 0, +1", "+1, -1, 0" ->
+                "0, +1, -1"; // Implement traversal rules for 120 degree change
+            case "0, -1, +1", "+1, 0, -1" ->
+                "-1, +1, 0"; // Implement traversal rules for 120 degree change
+            case "0, +1 , -1", "0, +1, -1" ->
+                "-1, 0, +1"; // Implement traversal rules for 120 degree change
+            case "-1, +1, 0" -> "0, -1, +1"; // Implement traversal rules for 120 degree change
+            default -> direction;
+          };
     }
     System.out.println("Direction: " + direction);
     collisionDetection(currentHex, direction, false);
   }
 
-  public boolean reversalChecker(String currentHex, String direction){
+  public boolean reversalChecker(String currentHex, String direction) {
     String[] coordinates = currentHex.split(",");
     int x = Integer.parseInt(coordinates[0]);
     int y = Integer.parseInt(coordinates[1]);
     int z = Integer.parseInt(coordinates[2]);
-    switch(direction){
+    switch (direction) {
       case "-1, 0, +1":
-        if(atomLocations.contains((x) + "," + (y-1) + "," + (z+1)) && atomLocations.contains((x-1) + "," + (y+1) + "," + z)){
+        if (atomLocations.contains((x) + "," + (y - 1) + "," + (z + 1))
+            && atomLocations.contains((x - 1) + "," + (y + 1) + "," + z)) {
           System.out.println("Reversal Detected");
           return true;
         }
         break;
       case "0, -1, +1":
-        if(atomLocations.contains((x-1) + "," + (y) + "," + (z+1)) && atomLocations.contains((x + 1) + "," + (y-1) + "," + z)){
+        if (atomLocations.contains((x - 1) + "," + (y) + "," + (z + 1))
+            && atomLocations.contains((x + 1) + "," + (y - 1) + "," + z)) {
           System.out.println("Reversal Detected");
           return true;
         }
         break;
       case "+1, -1, 0":
-        if(atomLocations.contains((x) + "," + (y-1) + "," + (z+1)) && atomLocations.contains((x+1) + "," + (y) + "," + (z-1))){
+        if (atomLocations.contains((x) + "," + (y - 1) + "," + (z + 1))
+            && atomLocations.contains((x + 1) + "," + (y) + "," + (z - 1))) {
           System.out.println("Reversal Detected");
           return true;
         }
         break;
       case "+1, 0, -1":
-        if(atomLocations.contains((x+1) + "," + (y-1) + "," + (z)) && atomLocations.contains((x) + "," + (y+1) + "," + (z-1))){
+        if (atomLocations.contains((x + 1) + "," + (y - 1) + "," + (z))
+            && atomLocations.contains((x) + "," + (y + 1) + "," + (z - 1))) {
           System.out.println("Reversal Detected");
           return true;
         }
         break;
       case "0, +1, -1":
-        if(atomLocations.contains((x-1) + "," + (y+1) + "," + (z)) && atomLocations.contains((x + 1) + "," + (y) + "," + (z-1))){
+        if (atomLocations.contains((x - 1) + "," + (y + 1) + "," + (z))
+            && atomLocations.contains((x + 1) + "," + (y) + "," + (z - 1))) {
           System.out.println("Reversal Detected");
           return true;
         }
         break;
       case "-1, +1, 0":
-        if(atomLocations.contains((x-1) + "," + (y) + "," + (z+1)) && atomLocations.contains((x) + "," + (y+1) + "," + (z-1))){
+        if (atomLocations.contains((x - 1) + "," + (y) + "," + (z + 1))
+            && atomLocations.contains((x) + "," + (y + 1) + "," + (z - 1))) {
           System.out.println("Reversal Detected");
           return true;
         }
@@ -655,7 +657,8 @@ public class Game {
     }
     return new int[] {dx, dy, dz};
   }
-  public void hexDisplayer(String originHex, int lastX, int lastY, int lastZ, String direction) {
+
+  public void hexDisplay(String originHex, int lastX, int lastY, int lastZ, String direction) {
     String[] coordinatesOrigin = originHex.split(",");
     int originX = Integer.parseInt(coordinatesOrigin[0]);
     int originY = Integer.parseInt(coordinatesOrigin[1]);
@@ -670,8 +673,7 @@ public class Game {
         if (deflectionCounter == 1) {
           hexManager.alterHexagon(originX, originY, originZ, Color.BLUE);
           hexManager.alterHexagon(lastX, lastY, lastZ, Color.BLUE);
-        }
-        else{
+        } else {
           System.out.print("Deflection Counter: " + deflectionCounter);
           hexManager.alterHexagon(originX, originY, originZ, Color.DEEPPINK);
           hexManager.alterHexagon(lastX, lastY, lastZ, Color.DEEPPINK);
@@ -698,35 +700,19 @@ public class Game {
     }
   }
 
-  private static int getDegree(String direction) {
-    int degree;
-
-    degree = switch (direction) {
-      case "+1, 0, -1" -> 0; // Reverse traversal rules for degree 0
-      case "0, +1, -1" -> 60; // Reverse traversal rules for degree 60
-      case "-1, +1, 0" -> 120; // Reverse traversal rules for degree 120
-      case "-1, 0, +1" -> 180; // Reverse traversal rules for degree 180
-      case "0, -1, +1" -> 240; // Reverse traversal rules for degree 240
-      case "+1, -1, 0" -> 300; // Reverse traversal rules for degree 300
-      default -> throw new IllegalArgumentException("Invalid direction: " + direction);
-    };
-    return degree;
-  }
-
-
   public boolean isInMultipleNeighbors(String currentHex) {
     Map<String, List<String>> atomNeighbors = atomsEffectiveRange();
     int counter = 0;
 
-    for(List<String> neighbors : atomNeighbors.values()){
-      if(neighbors.contains(currentHex)){
+    for (List<String> neighbors : atomNeighbors.values()) {
+      if (neighbors.contains(currentHex)) {
         counter++;
       }
     }
     return counter >= 2;
   }
 
-  public int[] findLastHex(int x, int y, int z, int dx, int dy, int dz){
+  public int[] findLastHex(int x, int y, int z, int dx, int dy, int dz) {
     // Move in the direction until you reach the edge of the grid
     while (x >= -4 && x <= 4 && y >= -4 && y <= 4 && z >= -4 && z <= 4) {
       // Calculate potential new coordinates
@@ -747,26 +733,31 @@ public class Game {
     return new int[] {x, y, z};
   }
 
-  public void scoreTracker(){
+  public void scoreTracker() {
     Map<String, Integer> orangeHexButtons = gui.getOrangeHexButtons();
     for (Map.Entry<String, Integer> entry : orangeHexButtons.entrySet()) {
       String key = entry.getKey();
-        atomsGuesses++;
-        if (atomLocations.contains(key)) {
-          atomsHit++;
-        }
+      atomsGuesses++;
+      if (atomLocations.contains(key)) {
+        atomsHit++;
+      }
     }
-        atomsMissed = atomsGuesses - atomsHit;
-        System.out.println("Atoms Hit: " + atomsHit);
-        System.out.println("Atoms Guesses: " + atomsGuesses);
-        System.out.println("Rays Shot Final: " + raysShot);
-        score = (raysShot + (5 * (atomsGuesses - atomsHit)));
-        System.out.println("Score: " + score);
+    atomsMissed = atomsGuesses - atomsHit;
+    System.out.println("Atoms Hit: " + atomsHit);
+    System.out.println("Atoms Guesses: " + atomsGuesses);
+    System.out.println("Rays Shot Final: " + raysShot);
+    score = (raysShot + (5 * (atomsGuesses - atomsHit)));
+    System.out.println("Score: " + score);
   }
 
-  public int getScore(){
+  public int getScore() {
     return score;
   }
+
+  public enum EncounterType {
+    NO_ENCOUNTER,
+    DIRECT_HIT,
+    DEFLECTION,
+    DOUBLE_HIT
+  }
 }
-
-

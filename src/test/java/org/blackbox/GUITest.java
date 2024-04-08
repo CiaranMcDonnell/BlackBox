@@ -9,12 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class GUITest {
-  private HexagonManager mockHexManager;
-  private GUI gui;
+    private GUI gui;
 
   @BeforeEach
   void setUp() {
-    mockHexManager = Mockito.mock(HexagonManager.class);
+      HexagonManager mockHexManager = Mockito.mock(HexagonManager.class);
     gui = new GUI();
     GUI.setHexagonManager(mockHexManager);
   }
@@ -57,7 +56,6 @@ class GUITest {
     Button button = gui.createHexButton(0, 0, 0, 0, 0);
     assertNotNull(button);
   }
-
 
   @Test
   void createButtonWithAction_createsButtonWithActionCorrectly() {

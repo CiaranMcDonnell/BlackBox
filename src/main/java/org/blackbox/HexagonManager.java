@@ -4,15 +4,15 @@ import java.util.*;
 import javafx.scene.paint.Color;
 
 /**
- * The HexagonManager class manages the hexagons in the game.
- * It stores the hexagons in a map for easy access and provides methods to manipulate and retrieve information about the hexagons.
+ * The HexagonManager class manages the hexagons in the game. It stores the hexagons in a map for
+ * easy access and provides methods to manipulate and retrieve information about the hexagons.
  */
 public class HexagonManager {
 
   // Directions for neighboring hexagons
   private static final int[][] DIRECTIONS = {
-          {+1, -1, 0}, {+1, 0, -1}, {0, +1, -1},
-          {-1, +1, 0}, {-1, 0, +1}, {0, -1, +1}
+    {+1, -1, 0}, {+1, 0, -1}, {0, +1, -1},
+    {-1, +1, 0}, {-1, 0, +1}, {0, -1, +1}
   };
   // Map to store hexagons for easy access
   private final Map<String, GUI.Hexagon> hexagons;
@@ -22,7 +22,7 @@ public class HexagonManager {
     hexagons = new HashMap<>();
   }
 
-  //Returns a list of neighboring locations for the given coordinates.
+  // Returns a list of neighboring locations for the given coordinates.
   public List<String> getNeighborLocations(int x, int y, int z) {
     List<String> neighbors = new ArrayList<>();
     for (int[] direction : DIRECTIONS) {
@@ -58,10 +58,10 @@ public class HexagonManager {
   public void alterHexagon(int x, int y, int z, Color newColor) {
     GUI.Hexagon hex = getHexagon(x, y, z);
     if (hex != null) {
-      Color transparentColor = Color.color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 0.7);
+      Color transparentColor =
+          Color.color(newColor.getRed(), newColor.getGreen(), newColor.getBlue(), 0.7);
       hex.setFill(transparentColor);
     }
     GUI.updateButtons();
   }
-
 }
