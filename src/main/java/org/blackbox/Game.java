@@ -102,6 +102,9 @@ public class Game {
     }
   }
 
+
+
+
   /**
    * Returns a map of the effective range of each atom. The effective range is defined as the
    * neighboring locations of each atom. This method iterates over the atom locations, splits the

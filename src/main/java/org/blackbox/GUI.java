@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javafx.application.Application;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -25,13 +26,20 @@ import javafx.stage.Stage;
 public class GUI extends Application {
   // Constants for the GUI
   public static final int HIGHEST_COORDINATE =
+<<<<<<< Updated upstream
       4; // Highest coordinate value which also sets the over-all size of the grid
   public static final float GUI_SIZE = 1200;
   private Label scoreLabel;
+=======
+          4; // Highest coordinate value which also sets the over-all size of the grid
+  public static final float GUI_SIZE = 1000;
+  private Button tutorialButton;
+  public boolean cheatMode = false;
+>>>>>>> Stashed changes
   private static final double HEX_SIZE = 55; // Size of the individual hexagon
   private int guessedAtoms = 0;
   private static final double HEX_HEIGHT =
-      Math.sqrt(3) * HEX_SIZE; // Height of the individual hexagon
+          Math.sqrt(3) * HEX_SIZE; // Height of the individual hexagon
   private static int counter = 0;
   // Instance variables for the GUI
   private static Pane root; // Pane to hold the hexagons
@@ -88,9 +96,9 @@ public class GUI extends Application {
   // Method to get a list of the circles in the root pane
   public static List<Circle> getCircles() {
     return root.getChildren().stream()
-        .filter(node -> node instanceof Circle)
-        .map(node -> (Circle) node)
-        .collect(Collectors.toList());
+            .filter(node -> node instanceof Circle)
+            .map(node -> (Circle) node)
+            .collect(Collectors.toList());
   }
 
   // Method to create a hexagon at a given position
@@ -98,10 +106,10 @@ public class GUI extends Application {
     Hexagon hexagon = new Hexagon(x, y, z);
     for (int i = 0; i < 6; i++) {
       hexagon
-          .getPoints()
-          .addAll(
-              posX + HEX_SIZE * Math.cos((i * Math.PI / 3) + Math.PI / 6),
-              posY + HEX_SIZE * Math.sin((i * Math.PI / 3) + Math.PI / 6));
+              .getPoints()
+              .addAll(
+                      posX + HEX_SIZE * Math.cos((i * Math.PI / 3) + Math.PI / 6),
+                      posY + HEX_SIZE * Math.sin((i * Math.PI / 3) + Math.PI / 6));
     }
     hexagon.setFill(Color.BLACK);
     hexagon.setStroke(Color.ORANGE);
@@ -115,8 +123,8 @@ public class GUI extends Application {
 
     for (int x = -HIGHEST_COORDINATE; x <= HIGHEST_COORDINATE; x++) {
       for (int y = Math.max(-HIGHEST_COORDINATE, -x - HIGHEST_COORDINATE);
-          y <= Math.min(HIGHEST_COORDINATE, -x + HIGHEST_COORDINATE);
-          y++) {
+           y <= Math.min(HIGHEST_COORDINATE, -x + HIGHEST_COORDINATE);
+           y++) {
         int z = -x - y;
         double posX = HEX_HEIGHT * (x + y / 2.0) + centerX;
         double posY = 1.5 * HEX_SIZE * y + centerY;
@@ -278,9 +286,9 @@ public class GUI extends Application {
             button.setStyle("-fx-background-color: purple;");
           }
         } else if (userData instanceof HexagonButtonData hexButtonData) {
-            if (hexButtonData.hex().equals(hex)) {
-                button.setDisable(true);
-            }
+          if (hexButtonData.hex().equals(hex)) {
+            button.setDisable(true);
+          }
         }
       }
     }
@@ -291,29 +299,143 @@ public class GUI extends Application {
   public void start(Stage primaryStage) {
     root = new Pane();
     Scene scene = new Scene(root, GUI_SIZE, GUI_SIZE);
-    root.setStyle("-fx-background-color: black;");
+    String hoverStyle = "-fx-background-color: linear-gradient(to bottom, #999999, #777777); -fx-text-fill: white; -fx-font-weight: bold;";
+    String startStyle = "-fx-background-color: linear-gradient(to bottom, #4CAF50, #45a049); -fx-text-fill: white; -fx-font-weight: bold";
+    String endStyle = "-fx-background-color: linear-gradient(to bottom, #f44336, #d32f2f); -fx-text-fill: white; -fx-font-weight: bold";
+    String cheatStyle = "-fx-background-color: linear-gradient(to bottom, #2196F3, #1976D2); -fx-text-fill: white; -fx-font-weight: bold";
+    String fullDetailsStyle = "-fx-background-color: linear-gradient(to bottom, #FFC107, #FFA000); -fx-text-fill: white; -fx-font-weight: bold";
+    String revealStyle = "-fx-background-color: linear-gradient(to bottom, #9C27B0, #7B1FA2); -fx-text-fill: white; -fx-font-weight: bold";
+    root.setStyle("-fx-background-color: black; " +
+            "-fx-border-color: orange; " +
+            "-fx-border-width: 2px;");
     Button startGameButton = new Button("Start Game");
+    startGameButton.setStyle(startStyle);
+    startGameButton.setOnMouseEntered(e -> {
+      startGameButton.setStyle(hoverStyle);
+      startGameButton.setCursor(Cursor.HAND);
+    });
+    startGameButton.setOnMouseExited(e -> {
+      startGameButton.setStyle(startStyle);
+      startGameButton.setCursor(Cursor.DEFAULT);
+    });
     startGameButton.setLayoutX(10); // Set the x position of the button
     startGameButton.setLayoutY(10); // Set the y position of the button
     Button endGameButton = new Button("End Game");
+    endGameButton.setStyle(endStyle);
+    endGameButton.setOnMouseEntered(e -> {
+      endGameButton.setStyle(hoverStyle);
+      endGameButton.setCursor(Cursor.HAND);
+    });
+    endGameButton.setOnMouseExited(e -> {
+      endGameButton.setStyle(endStyle);
+      endGameButton.setCursor(Cursor.DEFAULT);
+    });
     endGameButton.setLayoutX(10); // Set the x position of the button
     endGameButton.setLayoutY(70); // Set the y position of the button
     endGameButton.setDisable(true); // Initially disable the end game button
 
+<<<<<<< Updated upstream
+=======
+    Button cheatModeButton = new Button("Cheat Mode");
+    cheatModeButton.setStyle(cheatStyle);
+    cheatModeButton.setOnMouseEntered(e -> {
+      cheatModeButton.setStyle(hoverStyle);
+      cheatModeButton.setCursor(Cursor.HAND);
+    });
+    cheatModeButton.setOnMouseExited(e -> {
+      cheatModeButton.setStyle(cheatStyle);
+      cheatModeButton.setCursor(Cursor.DEFAULT);
+    });
+    cheatModeButton.setLayoutX(10); // Set the x position of the button
+    cheatModeButton.setLayoutY(100); // Set the y position of the button
+    cheatModeButton.setDisable(true);
+
+    Button fullDetailsButton = new Button("Full Details");
+    fullDetailsButton.setStyle(fullDetailsStyle);
+    fullDetailsButton.setOnMouseEntered(e -> {
+      fullDetailsButton.setStyle(hoverStyle);
+      fullDetailsButton.setCursor(Cursor.HAND);
+    });
+    fullDetailsButton.setOnMouseExited(e ->{
+      fullDetailsButton.setStyle(fullDetailsStyle);
+      fullDetailsButton.setCursor(Cursor.DEFAULT);
+    });
+    fullDetailsButton.setLayoutX(10); // Set the x position of the button
+    fullDetailsButton.setLayoutY(130); // Set the y position of the button
+    fullDetailsButton.setDisable(true);
+
+>>>>>>> Stashed changes
     Button revealButton = new Button("Reveal Atoms");
+    revealButton.setStyle("-fx-background-color: linear-gradient(to bottom, #9C27B0, #7B1FA2); -fx-text-fill: white; -fx-font-weight: bold;");
+    revealButton.setOnMouseEntered(e -> {
+      revealButton.setStyle(hoverStyle);
+      revealButton.setCursor(Cursor.HAND);
+    });
+    revealButton.setOnMouseExited(e -> {
+      revealButton.setStyle(hoverStyle);
+      revealButton.setCursor(Cursor.DEFAULT);
+    });
     revealButton.setLayoutX(10); // Set the x position of the button
     revealButton.setLayoutY(40); // Set the y position of the button
     revealButton.setDisable(true); // Initially disable the reveal button
 
+<<<<<<< Updated upstream
     scoreLabel = new Label("Score: 0"); // Initialize the Label
     scoreLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20)); // Set the font of the Label
     scoreLabel.setTextFill(Color.WHITE); // Set the color of the Label
     scoreLabel.setLayoutX(160); // Set the x position of the Label
     scoreLabel.setLayoutY(10); // Set the y position of the Label
+=======
+    tutorialButton = new Button("Tutorial");
+    tutorialButton.setStyle(revealStyle);
+    tutorialButton.setOnMouseEntered(e -> {
+      tutorialButton.setStyle(hoverStyle);
+      tutorialButton.setCursor(Cursor.HAND);
+    });
+    tutorialButton.setOnMouseExited(e -> {
+      tutorialButton.setStyle(revealStyle);
+      tutorialButton.setCursor(Cursor.DEFAULT);
+    });
+    tutorialButton.setLayoutX(10); // Set the x position of the button
+    tutorialButton.setLayoutY(160); // Set the y position of the button
+    tutorialButton.setOnAction(
+            e -> {
+              showTutorial();
+              tutorialButton.setDisable(true);
+            }
+    );
+>>>>>>> Stashed changes
 
     root.getChildren().add(scoreLabel); // Add the Label to the root Pane
 
     generateGrid(root);
+<<<<<<< Updated upstream
+=======
+    fullDetailsButton.setOnAction(
+            e -> {
+              if(!cheatMode){
+                root.getChildren().add(polylinePane);
+                cheatMode = true;
+              }
+              atomRevealer();
+              showScore();
+              fullDetailsButton.setDisable(true);
+              fullDetailsButton.setText("Full Details Enabled");
+              fullDetailsButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
+            }
+    );
+    cheatModeButton.setOnAction(
+            e -> {
+              if(!cheatMode){
+                root.getChildren().add(polylinePane);
+                cheatMode = true;
+              }
+              atomRevealer();
+              cheatModeButton.setDisable(true);
+              cheatModeButton.setText("Cheat Mode Enabled");
+              cheatModeButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
+            });
+>>>>>>> Stashed changes
 
     startGameButton.setOnAction(
             e -> {
@@ -335,6 +457,7 @@ public class GUI extends Application {
               }
             });
     endGameButton.setOnAction(
+<<<<<<< Updated upstream
         e -> {
           endGameButton.setDisable(true); // Disable the button after it's clicked
           endGameButton.setText("Game Ended"); // Change the text of the button
@@ -351,6 +474,28 @@ public class GUI extends Application {
           }
           updateScore(myGame.getScore());
         });
+=======
+            e -> {
+              endGameButton.setDisable(true); // Disable the button after it's clicked
+              endGameButton.setText("Game Ended"); // Change the text of the button
+              endGameButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
+              if(!atomsRevealed){
+                revealButton.setDisable(false);
+              }
+              cheatModeButton.setDisable(true);
+              fullDetailsButton.setDisable(false);
+              myGame.scoreTracker();
+              for (Node node : root.getChildren()) {
+                if (node instanceof Button button) {
+                  if (button.getShape() instanceof Polygon
+                          || button.getUserData() instanceof ButtonData) {
+                    button.setDisable(true);
+                  }
+                }
+              }
+              showScore();
+            });
+>>>>>>> Stashed changes
     revealButton.setOnAction(
             e -> {
               myGame.atomReveal();
@@ -367,6 +512,66 @@ public class GUI extends Application {
     primaryStage.show();
   }
 
+<<<<<<< Updated upstream
+=======
+  public void showScore() {
+    Stage scoreStage = new Stage();
+
+    Label scoreLabel = new Label("Score: " + myGame.getScore() + "\nRays Shot: " + myGame.raysShot + "\nAtoms Hit: " + myGame.atomsHit + "\nAtoms Missed: " + myGame.atomsMissed
+            + "\nScoring Formula = (" + myGame.raysShot + " * 1) + (" + myGame.atomsHit + " * -5) + (" + myGame.atomsMissed + " * 5) = " + myGame.getScore());
+    scoreLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+    scoreLabel.setTextFill(Color.BLACK);
+
+    Scene scoreScene = new Scene(new Pane(scoreLabel), 550, 150);
+    scoreStage.setScene(scoreScene);
+
+    scoreStage.show();
+  }
+
+  public void showTutorial(){
+    Stage tutorialStage = new Stage();
+
+    Label tutorialLabel = new Label("""
+    **Welcome to BlackBox!**
+
+    The objective of the game is simple:
+    - Your mission is to locate the atoms hidden inside the black box.
+    - You can shoot rays into the box from the entry point buttons located on the edge of the grid.
+    - The rays will interact with the atoms in two possible ways: they will either be deflected or absorbed.
+    - Deflected rays will exit the box from the edge points on the grid. The exit points are shown by the de-activated purple buttons.
+    - Absorbed rays will not exit the box.
+    - You can use the behavior of the rays to determine the location of the atoms.
+    - If you're feeling stuck, you can reveal the atoms at any time using the cheat mode button.
+    - The game ends when you have successfully guessed all the atom locations.
+    - The lower your score at the end the better, formula shown in score window at end of game.
+
+    Good luck and have fun!
+
+    **LEGEND:**
+    - **BLUE** = Ray deflected once at 60 degrees. Exit location is marked.
+    - **GREEN** = Ray absorbed by an atom. No exit location.
+    - **YELLOW** = Ray deflected by two atoms, sent 180 degrees back to source. No exit location marked.
+    - **PURPLE** = Ray made no contact with any atom and had a clear path. Exit location marked.
+    - **PINK** = Ray deflected by an atom at 60 degrees more than once. Exit location marked.
+    - **Entry Point Button** = ORANGE when not used, YELLOW when fired from, PURPLE when ray exited at that angle.
+    - **RED** = Atom. A dotted circle around it indicates the area of effect.
+    - **BROWN** = Ray deflected twice by two atoms affecting one hex, causing a 120-degree change and making the ray
+    leave the box before hitting another atom. Exit location marked.
+    """);
+
+    tutorialLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+    tutorialLabel.setTextFill(Color.ORANGE);
+    Pane tutorialPane = new Pane(tutorialLabel);
+    tutorialPane.setStyle("-fx-background-color: black;"); //Sets background color
+    Scene tutorialScene = new Scene(tutorialPane, 1200, 750);
+    tutorialStage.setScene(tutorialScene);
+    tutorialStage.show();
+
+    tutorialStage.setOnCloseRequest(e -> tutorialButton.setDisable(false));
+  }
+
+
+>>>>>>> Stashed changes
   void hexButtonAccuracy(){
     // Clear the existing entries in the map
     orangeHexButtons.clear();
@@ -401,7 +606,7 @@ public class GUI extends Application {
   public void updateGuessedAtoms(int newGuessedAtoms) {
     // Update the guessedAtoms value
     this.guessedAtoms = newGuessedAtoms;
-      setEndGameButtonDisabled(this.guessedAtoms < 6);
+    setEndGameButtonDisabled(this.guessedAtoms < 6);
   }
   public Button getEndGameButton() {
     // Iterate over all nodes in the root pane
@@ -423,12 +628,39 @@ public class GUI extends Application {
     endGameButton.setDisable(disabled);
   }
 
+<<<<<<< Updated upstream
+=======
+  public static void updateButtons(){
+    List<Button> buttonsToModify = new ArrayList<>();
+
+    for (Node node : root.getChildren()) {
+      if (node instanceof Button button) {
+        buttonsToModify.add(button);
+      }
+    }
+
+    for (Button button : buttonsToModify) {
+      button.toFront();
+      if(button.getShape() instanceof Polygon){
+        button.setDisable(false);
+      }
+    }
+  }
+
+
+>>>>>>> Stashed changes
   /**
    * Hexagon class that extends the Polygon class from JavaFX. This class represents a hexagon in
    * the grid.
    */
   public static class Hexagon extends Polygon {
+<<<<<<< Updated upstream
     private int x, y, z;
+=======
+    private final int x;
+    private final int y;
+    private final int z;
+>>>>>>> Stashed changes
 
     public Hexagon(int x, int y, int z) {
       this.x = x;

@@ -1,7 +1,7 @@
 package org.blackbox;
 
-import java.util.*;
-import javafx.scene.paint.Color;
+        import java.util.*;
+        import javafx.scene.paint.Color;
 
 /**
  * The HexagonManager class manages the hexagons in the game.
