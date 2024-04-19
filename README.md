@@ -18,17 +18,21 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-1. Clone the repository
+* Clone the repository
 ```bash
 git clone https://github.com/CiaranMcDonnell/BlackBox.git
 ```
 or
 
-2. Install the latest release
+* Install the latest release jar
+```bash
+https://github.com/CiaranMcDonnell/BlackBox/releases/tag/release
+```
 
 ### Built With
 * Java
 * Maven
+* JDK 17 Amazon Corretto
 
 
 ## Made By

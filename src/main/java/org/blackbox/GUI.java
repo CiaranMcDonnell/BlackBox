@@ -26,16 +26,10 @@ import javafx.stage.Stage;
 public class GUI extends Application {
   // Constants for the GUI
   public static final int HIGHEST_COORDINATE =
-<<<<<<< Updated upstream
-      4; // Highest coordinate value which also sets the over-all size of the grid
-  public static final float GUI_SIZE = 1200;
-  private Label scoreLabel;
-=======
           4; // Highest coordinate value which also sets the over-all size of the grid
   public static final float GUI_SIZE = 1000;
   private Button tutorialButton;
   public boolean cheatMode = false;
->>>>>>> Stashed changes
   private static final double HEX_SIZE = 55; // Size of the individual hexagon
   private int guessedAtoms = 0;
   private static final double HEX_HEIGHT =
@@ -334,8 +328,6 @@ public class GUI extends Application {
     endGameButton.setLayoutY(70); // Set the y position of the button
     endGameButton.setDisable(true); // Initially disable the end game button
 
-<<<<<<< Updated upstream
-=======
     Button cheatModeButton = new Button("Cheat Mode");
     cheatModeButton.setStyle(cheatStyle);
     cheatModeButton.setOnMouseEntered(e -> {
@@ -364,7 +356,6 @@ public class GUI extends Application {
     fullDetailsButton.setLayoutY(130); // Set the y position of the button
     fullDetailsButton.setDisable(true);
 
->>>>>>> Stashed changes
     Button revealButton = new Button("Reveal Atoms");
     revealButton.setStyle("-fx-background-color: linear-gradient(to bottom, #9C27B0, #7B1FA2); -fx-text-fill: white; -fx-font-weight: bold;");
     revealButton.setOnMouseEntered(e -> {
@@ -379,13 +370,6 @@ public class GUI extends Application {
     revealButton.setLayoutY(40); // Set the y position of the button
     revealButton.setDisable(true); // Initially disable the reveal button
 
-<<<<<<< Updated upstream
-    scoreLabel = new Label("Score: 0"); // Initialize the Label
-    scoreLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20)); // Set the font of the Label
-    scoreLabel.setTextFill(Color.WHITE); // Set the color of the Label
-    scoreLabel.setLayoutX(160); // Set the x position of the Label
-    scoreLabel.setLayoutY(10); // Set the y position of the Label
-=======
     tutorialButton = new Button("Tutorial");
     tutorialButton.setStyle(revealStyle);
     tutorialButton.setOnMouseEntered(e -> {
@@ -404,13 +388,10 @@ public class GUI extends Application {
               tutorialButton.setDisable(true);
             }
     );
->>>>>>> Stashed changes
 
     root.getChildren().add(scoreLabel); // Add the Label to the root Pane
 
     generateGrid(root);
-<<<<<<< Updated upstream
-=======
     fullDetailsButton.setOnAction(
             e -> {
               if(!cheatMode){
@@ -435,7 +416,6 @@ public class GUI extends Application {
               cheatModeButton.setText("Cheat Mode Enabled");
               cheatModeButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
             });
->>>>>>> Stashed changes
 
     startGameButton.setOnAction(
             e -> {
@@ -457,24 +437,6 @@ public class GUI extends Application {
               }
             });
     endGameButton.setOnAction(
-<<<<<<< Updated upstream
-        e -> {
-          endGameButton.setDisable(true); // Disable the button after it's clicked
-          endGameButton.setText("Game Ended"); // Change the text of the button
-          endGameButton.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
-          revealButton.setDisable(false);
-          myGame.scoreTracker();
-          for (Node node : root.getChildren()) {
-            if (node instanceof Button button) {
-              if (button.getShape() instanceof Polygon
-                  || button.getUserData() instanceof ButtonData) {
-                button.setDisable(true);
-              }
-            }
-          }
-          updateScore(myGame.getScore());
-        });
-=======
             e -> {
               endGameButton.setDisable(true); // Disable the button after it's clicked
               endGameButton.setText("Game Ended"); // Change the text of the button
@@ -495,7 +457,6 @@ public class GUI extends Application {
               }
               showScore();
             });
->>>>>>> Stashed changes
     revealButton.setOnAction(
             e -> {
               myGame.atomReveal();
@@ -512,8 +473,6 @@ public class GUI extends Application {
     primaryStage.show();
   }
 
-<<<<<<< Updated upstream
-=======
   public void showScore() {
     Stage scoreStage = new Stage();
 
@@ -571,7 +530,6 @@ public class GUI extends Application {
   }
 
 
->>>>>>> Stashed changes
   void hexButtonAccuracy(){
     // Clear the existing entries in the map
     orangeHexButtons.clear();
@@ -628,8 +586,6 @@ public class GUI extends Application {
     endGameButton.setDisable(disabled);
   }
 
-<<<<<<< Updated upstream
-=======
   public static void updateButtons(){
     List<Button> buttonsToModify = new ArrayList<>();
 
@@ -648,19 +604,14 @@ public class GUI extends Application {
   }
 
 
->>>>>>> Stashed changes
   /**
    * Hexagon class that extends the Polygon class from JavaFX. This class represents a hexagon in
    * the grid.
    */
   public static class Hexagon extends Polygon {
-<<<<<<< Updated upstream
-    private int x, y, z;
-=======
     private final int x;
     private final int y;
     private final int z;
->>>>>>> Stashed changes
 
     public Hexagon(int x, int y, int z) {
       this.x = x;

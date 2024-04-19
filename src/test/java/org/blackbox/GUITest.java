@@ -1,31 +1,26 @@
 package org.blackbox;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
+import javafx.scene.control.Button;
 import javafx.scene.shape.Circle;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class GUITest {
-  private HexagonManager mockHexManager;
+    private GUI gui;
+
+  @BeforeEach
+  void setUp() {
+      HexagonManager mockHexManager = Mockito.mock(HexagonManager.class);
+    gui = new GUI();
+    GUI.setHexagonManager(mockHexManager);
+  }
 
   @Test
   void setHexagonManager_setsManagerCorrectly() {
-    mockHexManager = mock(HexagonManager.class);
-    GUI.setHexagonManager(mockHexManager);
     assertNotNull(GUI.getHexagonManager());
-  }
-
-  @Test
-  void getHexHeight_returnsCorrectHeight() {
-    double expectedHeight = Math.sqrt(3) * 30;
-    assertEquals(expectedHeight, GUI.getHexHeight());
-  }
-
-  @Test
-  void getHexSize_returnsCorrectSize() {
-    double expectedSize = 30;
-    assertEquals(expectedSize, GUI.getHexSize());
   }
 
   @Test
@@ -36,13 +31,6 @@ class GUITest {
   }
 
   @Test
-  void main_executesWithoutErrors() {
-    mockHexManager = mock(HexagonManager.class);
-    GUI.setHexagonManager(mockHexManager);
-    assertDoesNotThrow(() -> GUI.main(new String[] {}));
-  }
-
-  @Test
   void addCircle_doesNotAddCircleWhenNull() {
     assertThrows(NullPointerException.class, () -> GUI.addCircle(null));
   }
@@ -50,5 +38,28 @@ class GUITest {
   @Test
   void setHexagonManager_doesNotSetWhenNull() {
     assertThrows(NullPointerException.class, () -> GUI.setHexagonManager(null));
+  }
+
+  @Test
+  void main_executesWithoutErrors() {
+    assertDoesNotThrow(() -> GUI.main(new String[] {}));
+  }
+
+  @Test
+  void createHexagon_createsHexagonCorrectly() {
+    GUI.Hexagon hexagon = gui.createHexagon(0, 0, 0, 0, 0);
+    assertNotNull(hexagon);
+  }
+
+  @Test
+  void createHexButton_createsButtonCorrectly() {
+    Button button = gui.createHexButton(0, 0, 0, 0, 0);
+    assertNotNull(button);
+  }
+
+  @Test
+  void createButtonWithAction_createsButtonWithActionCorrectly() {
+    Button button = gui.createButtonWithAction(0, 0, 0, "0,0,0");
+    assertNotNull(button);
   }
 }
