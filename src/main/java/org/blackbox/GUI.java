@@ -143,7 +143,7 @@ public class GUI extends Application {
         Text gridLocation = new Text(posX, posY, String.valueOf(counter++));
         gridLocation.setFont(
             Font.font("Verdana", FontWeight.BOLD, 20)); // Set the font name, style, and size
-        gridLocation.setStyle("-fx-fill: grey;");
+        gridLocation.setStyle("-fx-fill: white;");
         gridLocation.setX(posX - HEX_SIZE / 2); // Adjust the x position
         gridLocation.setY(posY); // Adjust the y position
 
@@ -320,27 +320,33 @@ public class GUI extends Application {
     startGameButton.setLayoutY(10); // Set the y position of the button
     Button endGameButton = new Button("End Game");
     endGameButton.setLayoutX(10); // Set the x position of the button
-    endGameButton.setLayoutY(70); // Set the y position of the button
+    endGameButton.setLayoutY(40); // Set the y position of the button
     endGameButton.setDisable(true); // Initially disable the end game button
 
-    Button cheatModeButton = new Button("Cheat Mode");
+    Button cheatModeButton = new Button("Enable Cheat Mode");
     cheatModeButton.setLayoutX(10); // Set the x position of the button
-    cheatModeButton.setLayoutY(100); // Set the y position of the button
+    cheatModeButton.setLayoutY(110); // Set the y position of the button
     cheatModeButton.setDisable(true);
+
+    Button exitButton = new Button("Exit");
+    exitButton.setLayoutX(10);
+    exitButton.setLayoutY(210);
+    exitButton.setOnAction(e -> System.exit(0));
+    root.getChildren().add(exitButton);//JAKUB
 
     Button fullDetailsButton = new Button("Full Details");
     fullDetailsButton.setLayoutX(10); // Set the x position of the button
-    fullDetailsButton.setLayoutY(130); // Set the y position of the button
+    fullDetailsButton.setLayoutY(170); // Set the y position of the button
     fullDetailsButton.setDisable(true);
 
     Button revealButton = new Button("Reveal Atoms");
     revealButton.setLayoutX(10); // Set the x position of the button
-    revealButton.setLayoutY(40); // Set the y position of the button
+    revealButton.setLayoutY(140); // Set the y position of the button
     revealButton.setDisable(true); // Initially disable the reveal button
 
     tutorialButton = new Button("Tutorial");
     tutorialButton.setLayoutX(10); // Set the x position of the button
-    tutorialButton.setLayoutY(160); // Set the y position of the button
+    tutorialButton.setLayoutY(70); // Set the y position of the button
     tutorialButton.setOnAction(
         e -> {
           showTutorial();
@@ -367,7 +373,6 @@ public class GUI extends Application {
             cheatMode = true;
           }
           isAtomRevealed();
-          cheatModeButton.setDisable(true);
           cheatModeButton.setText("Cheat Mode Enabled");
           cheatModeButton.setStyle("-fx-text-fill: grey; -fx-font-weight: bold;");
         });
@@ -468,12 +473,13 @@ public class GUI extends Application {
   public void showTutorial() {
     Stage tutorialStage = new Stage();
 
+    Pane tutorialPane = new Pane();
+    tutorialPane.setStyle("-fx-background-color: black;");//JAKUB KOT
+
     Label tutorialLabel =
         new Label(
             """
-    **Welcome to BlackBox!**
-
-    The objective of the game is simple:
+    \t\t\t\t\t\t\t\t\t\t**WELCOME TO BLACKBOX!**\nThe objective of the game is simple:
     - Your mission is to locate the atoms hidden inside the black box.
     - You can shoot rays into the box from the entry point buttons located on the edge of the grid.
     - The rays will interact with the atoms in two possible ways: they will either be deflected or absorbed.
@@ -482,12 +488,8 @@ public class GUI extends Application {
     - You can use the behavior of the rays to determine the location of the atoms.
     - If you're feeling stuck, you can reveal the atoms at any time using the cheat mode button.
     - The game ends when you have successfully guessed all the atom locations.
-    - The lower your score at the end the better, formula shown in score window at end of game.
-
-    Good luck and have fun!
-
-    **LEGEND:**
-    - **BLUE** = Ray deflected once at 60 degrees. Exit location is marked.
+    - The lower your score at the end the better, formula shown in score window at end of game.\n
+    Good luck and have fun!\n\n\t\t\t\t\t\t\t\t\t\t\t\t[LEGEND]\n\n- **BLUE** = Ray deflected once at 60 degrees. Exit location is marked.
     - **GREEN** = Ray absorbed by an atom. No exit location.
     - **YELLOW** = Ray deflected by two atoms, sent 180 degrees back to source. No exit location marked.
     - **PURPLE** = Ray made no contact with any atom and had a clear path. Exit location marked.
@@ -496,15 +498,19 @@ public class GUI extends Application {
     - **Entry Point Button** = ORANGE when not used, YELLOW when fired from, PURPLE when ray exited at that angle.
     - **RED** = Atom. A dotted circle around it indicates the area of effect.
     - **BROWN** = Ray deflected twice by two atoms affecting one hex, causing a 120-degree change and making the ray
-    leave the box before hitting another atom. Exit location marked.
-    """);
+    leave the box before hitting another atom. Exit location marked.\n\n\t\t\t\t\t\t\t\t\t\t   PRESS ANY KEY TO EXIT
+    """);//JAKUB KOT
 
     tutorialLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-    tutorialLabel.setTextFill(Color.BLACK);
-    Scene tutorialScene = new Scene(new Pane(tutorialLabel), 1200, 750);
+    tutorialLabel.setTextFill(Color.ORANGE);
+    tutorialPane.getChildren().add(tutorialLabel);
+    Scene tutorialScene = new Scene(tutorialPane, 1200, 750);
     tutorialStage.setScene(tutorialScene);
     tutorialStage.show();
-
+    tutorialScene.setOnKeyPressed(e -> {
+      tutorialStage.close();
+      tutorialButton.setDisable(false);
+    });//JAKUB KOT
     tutorialStage.setOnCloseRequest(e -> tutorialButton.setDisable(false));
   }
 
