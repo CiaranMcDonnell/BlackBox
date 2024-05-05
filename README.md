@@ -26,7 +26,7 @@ or
 
 * Install the latest release jar
 ```bash
-https://github.com/CiaranMcDonnell/BlackBox/releases/tag/release
+https://github.com/CiaranMcDonnell/BlackBox/releases/tag/FinishedRelease
 ```
 
 ### Built With
