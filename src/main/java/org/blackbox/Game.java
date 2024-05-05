@@ -519,7 +519,7 @@ public class Game {
       System.out.print("Right Side true upper true");
       direction =
           switch (direction) {
-            case "-1, 0, +1" -> "0, +1, -1"; // Implement traversal rules for 120 degree change
+            case "-1, 0, +1" -> "+1, -1, 0"; // Implement traversal rules for 120 degree change
             case "0, -1, +1" -> "+1, 0, -1"; // Implement traversal rules for 120 degree change
             case "+1, -1, 0", "0, +1 , -1" ->
                 "-1, 0, +1"; // Implement traversal rules for 120 degree change
