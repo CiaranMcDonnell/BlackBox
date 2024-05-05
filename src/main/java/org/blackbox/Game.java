@@ -78,12 +78,7 @@ public class Game {
    * styled and added to the GUI.
    */
   public void atomReveal() {
-
-    if (!gui.cheatMode) {
-      return; // Exit the method if cheat mode is not active
-    }
-
-    for (String location : atomLocations) {
+      for (String location : atomLocations) {
       String[] coordinates = location.split(",");
       int x = Integer.parseInt(coordinates[0]);
       int y = Integer.parseInt(coordinates[1]);
